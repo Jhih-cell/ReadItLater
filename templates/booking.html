@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1">
+    <title>booking</title>
+    <script src="https://js.tappaysdk.com/tpdirect/v5.7.0"></script>
+
+    <script>
+        function getData() {
+
+            var req = new XMLHttpRequest();
+            req.open("get", "http://127.0.0.1:3000/api/booking")
+
+            req.onload = function () {
+
+                if (req.status == 200) {
+                    var Name = document.getElementById('Name');
+                    Name.innerText = JSON.parse(req.responseText).data.attraction.name
+                    document.getElementById('Date').innerText = JSON.parse(req.responseText).data.date;
+                    document.getElementById('Time').innerText = JSON.parse(req.responseText).data.time;
+                    document.getElementById('Price').innerText = JSON.parse(req.responseText).data.price;
+                    document.getElementById('payment').innerText = JSON.parse(req.responseText).data.price;
+                    document.getElementById('Place').innerText = JSON.parse(req.responseText).data.attraction.address;
+                    var picsrc = document.querySelector('.picture img')
+                    picsrc.setAttribute("src", JSON.parse(req.responseText).data.attraction.image)
+
+
+                    console.log(req.response)
+                } else if (req.status >= 400 && req.status <= 500) {
+                    console.log('404')
+                    document.querySelector('.wrap').innerHTML = '<p class="noreservation">目前沒有任何待預定的行程</p>'
+                }
+
+                get();
+                var submitButton = document.querySelector('#submit-button')
+                TPDirect.setupSDK(20456, 'app_ugQAXcSDs2TVpVhwykpGO5bDt2QHRmTujxMfuDaBkuLWbyLizRvUbAbrbLoL', 'sandbox')
+
+                // 必填 CCV Example
+                var fields = {
+                    number: {
+
+                        element: document.getElementById('card-number'),
+                        placeholder: '**** **** **** ****'
+                    },
+                    expirationDate: {
+                        // DOM object
+                        element: document.getElementById('card-expiration-date'),
+                        placeholder: 'MM / YY'
+                    },
+                    ccv: {
+                        element: document.getElementById('card-ccv'),
+                        placeholder: '後三碼'
+                    }
+                }
+
+                TPDirect.card.setup({
+                    fields: fields,
+                    styles: {
+                        // Style all elements
+                        'input': {
+                            'color': 'gray'
+                        },
+                        // Styling ccv field
+                        'input.ccv': {
+                            'font-size': '16px'
+                        },
+                        // Styling expiration-date field
+                        'input.expiration-date': {
+                            'font-size': '16px'
+                        },
+                        // Styling card-number field
+                        'input.card-number': {
+                            'font-size': '16px'
+                        },
+                        // style focus state
+                        ':focus': {
+                            'color': 'black'
+                        },
+                        // style valid state
+                        '.valid': {
+                            'color': 'green'
+                        },
+                        // style invalid state
+                        '.invalid': {
+                            'color': 'red'
+                        },
+                        // Media queries
+                        // Note that these apply to the iframe, not the root window.
+                        // '@media screen and (max-width: 400px)': {
+                        //     'input': {
+                        //         'color': 'orange'
+                        //     }
+                        // }
+                    }
+                })
+
+                TPDirect.card.onUpdate(function (update) {
+
+                    // let submitButton = document.querySelector('#submit');
+                    if (update.canGetPrime === true) {
+                        // Enable submit Button to get prime.
+                        // TPDirect.card.getPrime()
+                        submitButton.removeAttribute('disabled')
+                        submitButton.style.background = '#448899'
+                        
+                    } else {
+                        // Disable submit Button to get prime.
+                        submitButton.setAttribute('disabled', true)
+                        submitButton.style.background = '#D8D6D5'
+                    }
+
+                    // cardTypes = ['mastercard', 'visa', 'jcb', 'amex', 'unknown']
+                    // if (update.cardType === 'visa') {
+                    //     // Handle card type visa.
+                    // }
+                    // 取得 TapPay Fields 的 status
+                    const tappayStatus =TPDirect.card.getTappayFieldsStatus()
+                    var cardnumbergroup=document.querySelector('.card-number-group')
+                    var expirationdategroup=document.querySelector('.expiration-date-group')
+                    var cvcgroup=document.querySelector('.cvc-group')
+
+                    // number 欄位是錯誤的
+                    if (update.status.number === 2) {
+                        setNumberFormGroupToError(cardnumbergroup)
+                    } else if (tappayStatus.number === 0) {
+                        setNumberFormGroupToSuccess(cardnumbergroup)
+                    } else {
+                        setNumberFormGroupToNormal(cardnumbergroup)
+                    }
+
+                    if (update.status.expiry === 2) {
+                        setNumberFormGroupToError(expirationdategroup)
+                    } else if (update.status.expiry === 0) {
+                        setNumberFormGroupToSuccess(expirationdategroup)
+                    } else {
+                        setNumberFormGroupToNormal(expirationdategroup)
+                    }
+
+                    if (update.status.cvc === 2) {
+                        setNumberFormGroupToError(cvcgroup)
+                    } else if (update.status.cvc === 0) {
+                        setNumberFormGroupToSuccess(cvcgroup)
+                    } else {
+                        setNumberFormGroupToNormal(cvcgroup)
+                    }
+
+                })
+
+
+
+            }
+
+
+            req.send();
+
+        }
+        function onSubmit(event) {
+            // event.preventDefault()
+                       
+            const tappayStatus = TPDirect.card.getTappayFieldsStatus()
+            console.log(tappayStatus)
+
+            // Check TPDirect.card.getTappayFieldsStatus().canGetPrime before TPDirect.card.getPrime
+            if (tappayStatus.canGetPrime === false) {
+                console.log('can not get prime')
+                alert('請輸入正確的信用卡資訊')
+                return
+            }
+
+
+
+            // Get prime
+            TPDirect.card.getPrime((result) => {
+                if (result.status !== 0) {
+                    alert('請輸入正確的信用卡資訊')
+                    console.log('get prime error ' + result.msg)
+                    return
+                }
+                console.log('get prime 成功，prime: ' + result.card.prime)
+                var getUrlString = location.href;
+                var url = new URL(getUrlString);
+                var orderdata = {
+                    "prime": result.card.prime,
+                    "order": {
+                        "price": document.getElementById('Price').innerText,
+                        "trip": {
+                            "attraction": {
+                                "id": url.pathname.replace("/booking?", ""),
+                                "name": document.getElementById('Name').innerText,
+                                "address": document.getElementById('Place').innerText
+                            },
+                            "date": document.getElementById('Date').innerText,
+                            "time": document.getElementById('Time').innerText
+                        },
+                        "contact": {
+                            "name": document.getElementById('contactname').value,
+                            "email": document.getElementById('bookingmail').value,
+                            "phone": document.getElementById('phone').value,
+                        }
+                    }
+                }
+                var req = new XMLHttpRequest();
+                req.open("post", "http://127.0.0.1:3000/api/orders", true)
+                req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
+                let data = JSON.stringify(orderdata); //將物件資料轉成字串
+
+                req.onload = function () {
+                    if (req.status == 200) {
+                        console.log("成功送到order api了", req.response)
+                        if (JSON.parse(req.responseText).data.payment.message == "付款成功") {
+                            document.location.href = "/thankyou?number=" + JSON.parse(req.responseText).bookingID
+
+                        }
+
+                    } else if (req.status >= 400 && req.status <= 500) {
+                        console.log("沒有送到order api", req.response)
+                    }
+                }
+                req.send(data); //送出字串
+            })
+        }
+
+        function setNumberFormGroupToError(selector) {
+            selector.classList.add('has-error')
+            selector.classList.remove('has-success')
+        }
+        function setNumberFormGroupToSuccess(selector) {
+            selector.classList.add('has-error')
+            selector.classList.add('has-success')
+        }
+
+        function setNumberFormGroupToNormal(selector) {
+            selector.classList.add('has-error')
+            selector.classList.add('has-success')
+        }
+
+
+        //popup_登入
+
+        function popup() {
+            document.getElementById('popup1').classList.remove("overlay");
+            document.getElementById('popup1').classList.add("overlay_target")
+        }
+
+        function endpopup() {
+            document.getElementById('popup1').classList.remove("overlay_target");
+            document.getElementById('popup1').classList.add("overlay")
+
+        }
+        //popup_註冊
+
+        function popup2() {
+            document.getElementById('popup2').classList.remove("overlay");
+            document.getElementById('popup2').classList.add("overlay_target")
+        }
+
+        function endpopup2() {
+            document.getElementById('popup2').classList.remove("overlay_target");
+            document.getElementById('popup2').classList.add("overlay")
+            document.getElementById('popup1').classList.remove("overlay_target");
+            document.getElementById('popup1').classList.add("overlay")
+        }
+
+        function backloginpop() {
+            document.getElementById('popup2').classList.remove("overlay_target");
+            document.getElementById('popup1').classList.add("overlay_target")
+        }
+
+
+        //從前端POST資料到後端_註冊
+        function register() {
+            let name = document.getElementById('name').value;
+            let email = document.getElementById('email').value;
+            let password = document.getElementById('password').value;
+            var account = {
+                name: name,
+                email: email,
+                password: password
+            }
+            var req = new XMLHttpRequest();
+            req.open("post", "http://127.0.0.1:3000/api/user", true)
+            req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
+            let data = JSON.stringify(account); //將物件資料轉成字串
+
+            req.onload = function () {
+                if (req.status == 200) {
+                    document.querySelector('.query').innerHTML = '<p style="color:green;">註冊成功</p>'
+                } else if (req.status >= 400 && req.status <= 500) {
+                    document.querySelector('.query').innerHTML = '<p style="color:red;">註冊失敗</p><p onclick="backloginpop();" style="cursor: pointer;">已經有帳戶了？點此登入</p>'
+                }
+
+            }
+            req.send(data); //送出字串
+        }
+
+        function login() {
+
+            let email = document.getElementById('loginemail').value;
+            let password = document.getElementById('loginpassword').value;
+            let account = {
+                email: email,
+                password: password
+            }
+            var req = new XMLHttpRequest();
+            req.open("patch", "http://127.0.0.1:3000/api/user", true)
+            req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
+            let data = JSON.stringify(account); //將物件資料轉成字串
+
+            req.onload = function () {
+                if (req.status == 200) {
+                    window.location.reload();
+
+                } else {
+                    document.querySelector('.query0').innerHTML = '<p style="color:red;cursor:pointer;">請輸入正確的帳號密碼</p><p onclick="popup2();">還沒有帳戶？點此註冊</p>'
+                }
+
+            }
+            req.send(data); //送出字串
+
+        }
+
+
+        function logout() {
+            var req = new XMLHttpRequest();
+            req.open("delete", "http://127.0.0.1:3000/api/user", true)
+            req.onload = function () {
+                if (req.status = 200) {
+                    window.location.reload();
+                }
+            }
+            req.send();
+
+        }
+        //刪除行程
+        function cancel() {
+            var req = new XMLHttpRequest();
+            req.open("delete", "http://127.0.0.1:3000/api/booking", true)
+            req.onload = function () {
+                if (req.status = 200) {
+                    console.log('已刪除')
+                    window.location.reload();
+                }
+            }
+            req.send();
+
+        }
+        //取得登入資料
+        function get() {
+            var req = new XMLHttpRequest();
+            req.open("get", "http://127.0.0.1:3000/api/user", true)
+            req.onload = function () {
+
+                if (req.responseText == '{"data": null}') {
+                    console.log('未登入')
+                    document.location.href = "/";
+
+
+                } else {
+                    console.log('已登入')
+                    var bt2 = document.getElementById('bt2');
+                    bt2.innerHTML = '<div class="bt2" onclick="logout();">登出</div>';
+                    var bookingname = document.getElementById('bookingname');
+                    bookingname.innerText = JSON.parse(req.responseText).data.name
+                    contactname.value = JSON.parse(req.responseText).data.name
+                    var bookingmail = document.getElementById('bookingmail');
+                    bookingmail.value = JSON.parse(req.responseText).data.email
+
+                }
+
+            }
+            req.send();
+
+
+        }
+
+        function reservation2() {
+            let bt2txt = document.querySelector('.bt2').innerText
+            if (bt2txt == "登入/註冊") {
+                alert('未登入!')
+                popup();
+            } else {
+                console.log('已登入')
+                document.location.href = "/booking";
+            }
+        }
+
+
+    </script>
+
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+</head>
+<style>
+    @import url(https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300&display=swap);
+    @import url(https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap);
+
+    * {
+        margin: 0;
+    }
+
+    nav {
+        height: 54px;
+        position: fixed;
+        left: 0;
+        top: 0;
+        text-align: center;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        z-index: 11;
+        border-bottom: 1px solid #E8E8E8;
+        background: #FFFFFF;
+
+    }
+
+    .nav {
+        width: 1200px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: auto;
+    }
+
+    .nav_div_h1 {
+        padding: 8px;
+        font-family: Noto Sans;
+        font-style: normal;
+
+        font-weight: bold;
+        font-size: 30px;
+        line-height: 34px;
+        color: #448899;
+
+    }
+
+    .index {
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .frame1 {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .bt1 {
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 16px;
+        line-height: 13px;
+        color: #666666;
+        margin: 10px 0px;
+        padding: 10px;
+        cursor: pointer;
+    }
+
+    .bt2 {
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 16px;
+        line-height: 13px;
+        color: #666666;
+        margin: 10px 0px;
+        padding: 10px;
+    }
+
+
+    .wrap {
+        padding-top: 100px;
+
+    }
+
+    .noreservation {
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 16px;
+        line-height: 13px;
+        text-align: center;
+        color: #666666;
+        margin-bottom: 100%;
+
+    }
+
+    .seperator_main {
+        border: 1px solid #E8E8E8;
+        width: 1200px;
+        height: 0px;
+        margin: auto;
+    }
+
+    .header {
+        width: 1000px;
+        margin: auto;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 19px;
+        line-height: 16px;
+        display: flex;
+        align-items: center;
+        color: #666666;
+
+    }
+
+    .section {
+        width: 980px;
+        display: flex;
+        flex-direction: row;
+        margin: auto;
+        margin-top: 25px;
+        margin-bottom: 40px;
+    }
+
+    .picture {
+        width: 266px;
+        margin-right: 14px;
+        margin: auto;
+    }
+
+    .picture img {
+        width: 100%;
+    }
+
+    .info {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 700px;
+        margin-right: -50px;
+        padding-top: 7px;
+    }
+
+    .contact_form,
+    .payment {
+        width: 980px;
+
+        display: flex;
+        flex-direction: column;
+        margin: auto;
+        margin-bottom: 40px;
+    }
+
+    .contact_form input,
+    .payment input {
+        width: 200px;
+        height: 38px;
+        background: #FFFFFF;
+        border: 1px solid #E8E8E8;
+        border-radius: 5px;
+    }
+
+    .contact_form p {
+        width: 608px;
+        height: 14px;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 16px;
+        line-height: 25px;
+        margin-top: 20px;
+        margin-bottom: 45px;
+        color: #666666;
+    }
+
+    .contact_form div,
+    .payment div {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding-bottom: 8px;
+    }
+
+    .confirm {
+        width: 980px;
+        display: flex;
+        flex-direction: column;
+        text-align: right;
+        margin: auto;
+    }
+
+    button,
+    .button {
+        cursor: pointer;
+    }
+
+    .confirm button {
+        padding: 10px 18px;
+        background: #448899;
+        border-radius: 5px;
+        margin-top: 15px;
+        margin-left: 808px;
+        margin-bottom: 41px;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 19px;
+        line-height: 19px;
+        color: #FFFFFF;
+        border: none;
+    }
+
+    .confirm div {
+        margin-top: 15px;
+    }
+
+    .section h3 {
+        height: 14px;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 16px;
+        line-height: 13px;
+        display: flex;
+        align-items: center;
+        color: #448899;
+        margin-bottom: 30px;
+    }
+
+    .section p {
+        height: 14px;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 16px;
+        line-height: 13px;
+        display: flex;
+        align-items: center;
+        color: #666666;
+        margin-bottom: 20px;
+    }
+
+    .contact_form h3,
+    .payment h3 {
+        height: 16px;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 19px;
+        line-height: 16px;
+        margin-top: 44px;
+        margin-bottom: 24px;
+        color: #666666;
+    }
+
+    .contact_form span,
+    .payment span {
+        width: 81px;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 16px;
+        line-height: 16px;
+        color: #666666;
+    }
+
+
+
+
+
+
+
+    footer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* padding: 40px 0; */
+        /* height: 104px; */
+        background: #757575;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 16px;
+        line-height: 13px;
+        color: #FFFFFF;
+        height: 104px;
+        line-height: 104px;
+
+    }
+
+    footer p {
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 16px;
+        line-height: 13px;
+        color: #FFFFFF;
+        padding: 5%;
+    }
+
+    .overlay {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.5);
+        transition: opacity 200ms;
+        visibility: hidden;
+        opacity: 0;
+
+
+    }
+
+    .overlay_target {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.5);
+        transition: opacity 200ms;
+        visibility: visible;
+        opacity: 1;
+        z-index: 11;
+    }
+
+    .popup {
+        margin: 75px auto;
+        padding: 20px;
+        background: #fff;
+        border: 1px solid #666;
+        border-radius: 5px;
+        width: 300px;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        position: relative;
+
+    }
+
+    .close {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: 20px;
+        right: 20px;
+        opacity: 0.8;
+        transition: all 200ms;
+        font-size: 24px;
+        font-weight: bold;
+        text-decoration: none;
+        color: #666;
+        cursor: pointer;
+    }
+
+    .content {
+        margin-left: auto;
+        margin-right: auto;
+        display: flex;
+        justify-content: space-around;
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .form input {
+        width: 310px;
+        height: 35px;
+        background: #FFFFFF;
+        border: 1px solid #CCCCCC;
+        border-radius: 5px;
+        margin: 5px auto;
+
+    }
+
+    .form button {
+        width: 310px;
+        height: 35px;
+        background: #448899;
+        border-radius: 5px;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 19px;
+        line-height: 16px;
+        color: #FFFFFF;
+        border-style: none;
+        margin-bottom: 5px;
+    }
+
+    .form p {
+        width: 310px;
+        height: 22px;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 16px;
+        line-height: 13px;
+        text-align: center;
+        color: #666666;
+    }
+
+    .form h3 {
+        width: 310px;
+        height: 27px;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 24px;
+        line-height: 24px;
+        text-align: center;
+        color: #666666;
+        margin-bottom: 7px;
+    }
+
+    .form .top {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 340px;
+        height: 10px;
+
+        background: linear-gradient(270deg, #337788 0%, #66AABB 100%);
+    }
+
+    .tpfield {
+        /* height: 40px;
+        width: 300px;
+        border: 1px solid gray;
+        margin: 5px 0;
+        padding: 5px; */
+        width: 200px;
+        height: 38px;
+        background: #FFFFFF;
+        border: 1px solid #E8E8E8;
+        border-radius: 5px;
+    }
+
+    .tappay-field-focus {
+        background-color: transparent;
+
+    }
+
+    @media (max-width:1200px) {
+        .wrap {
+            display: grid;
+            margin: 0 10px 0 10px;
+        }
+
+        nav,
+        .nav,
+        .header,
+        .section,
+        .info,
+        .seperator_main,
+        .contact_form,
+        .contact_form p,
+        .payment {
+            width: 100%;
+        }
+
+        .trashcan {
+            display: flex;
+            align-items: flex-end;
+            cursor: pointer;
+        }
+
+        .confirm {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            text-align: right;
+            margin: auto;
+        }
+
+        .confirm button {
+            margin: 5px 0 10% 73%;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+    .has-error .tappay-field-focus {
+            border-color: #843534;
+            -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #ce8483;
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #ce8483;
+        }
+    .has-success .tappay-field-focus {
+        border-color: #2b542c;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #67b168;
+        box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px #67b168;
+    }
+
+
+
+    @media (max-width:500px) {
+        .wrap {
+            display: grid;
+            margin: 0 5px 0 5px;
+        }
+
+        nav,
+        .nav,
+        .header,
+        .section,
+        .info,
+        .seperator_main,
+        .contact_form,
+        .contact_form p,
+        .payment {
+            width: 100%;
+        }
+
+        .info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .infochild {
+            margin: auto;
+        }
+
+
+        .trashcan {
+            /* display: flex;
+            align-items: flex-end; */
+            padding-left: 85%;
+        }
+
+        .confirm {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            text-align: right;
+            margin: auto;
+        }
+
+        .confirm button {
+            margin: 5px 0 10% 53%;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+</style>
+
+<body onload="getData();">
+    <nav>
+        <div class="nav">
+            <a class="index" href="http://127.0.0.1:3000/">
+                <div class="nav_div_h1">臺北一日遊</div>
+            </a>
+            <div class="frame1">
+                <div class="bt1" onclick="reservation2();">預定行程</div>
+                <a id="bt2" class="button">
+                    <div class="bt2" onclick="popup();">登入/註冊</div>
+                </a>
+            </div>
+        </div>
+        </div>
+
+
+    </nav>
+
+    <div class="wrap">
+        <div class="header">您好，<span id="bookingname"></span>，待預訂的行程如下：</div>
+
+        <div class="section">
+            <div class="picture"><img src="" alt=""></div>
+            <div class="info">
+                <div class="infochild">
+                    <h3>臺北一日遊：<span id="Name"></span></h3>
+                    <p>日期：<span id="Date"></span></p>
+                    <p>時間：<span id="Time"></span></p>
+                    <p>費用：<span id="Price"></span></p>
+                    <p>地點：<span id="Place"></span></p>
+                </div>
+                <div class="trashcan" onclick="cancel();"><img
+                        src="{{ url_for('static', filename='images/icon_delete.png') }}" alt="">
+                </div>
+
+            </div>
+        </div>
+        <div class="seperator_main"></div>
+
+        <form name="myForm" class="contact_form" >
+            <h3>您的聯絡資訊</h3>
+            <div><span>聯絡姓名：</span><input type="text" id="contactname" required/></div>
+            <div><span>聯絡信箱：</span><input type="text" id="bookingmail" required/></div>
+            <div><span>手機號碼：</span><input type="text" name="fph" id="phone" required/></div>
+            <p>請保持手機暢通，準時到達，導覽人員將用手機與您聯繫，務必留下正確的聯絡方式。</p>
+        </form>
+        <div class="seperator_main"></div>
+        <form class="payment cardview-container tappay-field-focus">
+            <h3>信用卡付款資訊</h3>
+
+            <div class="card-number-group"><span>卡片號碼：</span>
+                <div class="tpfield" id="card-number"></div>
+            </div>
+            <div class="expiration-date-group"><span>過期時間：</span>
+                <div class="tpfield" id="card-expiration-date"></div>
+            </div>
+            <div class="cvc-group"><span>驗證密碼：</span>
+                <div class="tpfield" id="card-ccv"></div>
+            </div>
+
+        </form>
+
+        <div class="seperator_main"></div>
+
+        <div class="confirm">
+            <div>總價：新台幣 <span id="payment"></span> 元</div>
+            <button id="submit-button" onclick="onSubmit();" type="button" >確認訂購並付款</button>
+        </div>
+
+    </div>
+
+
+
+
+
+
+    <footer>COPYRIGHT © 2021 臺北一日遊</footer>
+
+    <!-- popup -->
+    <div id="popup1" class="overlay">
+
+        <div class="popup">
+
+            <a class="close" onclick="endpopup();">&times;</a>
+            <div class="content">
+                <form class="form" action="/api/user" method="GET">
+                    <div class="top"></div>
+                    <h3>登入會員帳號</h3>
+                    <table>
+                        <tr>
+                            <td>
+                                <input id="loginemail" type="email" name="email" action="/api/user" method="POST"
+                                    placeholder="輸入電子信箱" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input id="loginpassword" type="password" name="password" action="/api/user"
+                                    method="POST" placeholder="輸入密碼" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><button onclick="login();return false;">登入帳戶</button></td>
+                        </tr>
+                        <tr>
+                            <td class="query0">
+                                <p onclick="popup2();" style="cursor: pointer;">還沒有帳戶？點此註冊</p>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="popup2" class="overlay">
+
+        <div class="popup">
+
+            <a class="close" onclick="endpopup2();">&times;</a>
+            <div class="content">
+                <form class="form">
+                    <div class="top"></div>
+                    <h3>註冊會員帳號</h3>
+                    <table>
+                        <tr>
+                            <td><input id="name" type="text" name="name" placeholder="輸入姓名" /></td>
+                        </tr>
+                        <tr>
+                            <td><input id="email" name="email" placeholder="輸入電子郵件" /></td>
+                        </tr>
+                        <tr>
+                            <td><input id="password" type="password" name="password" placeholder="輸入密碼" /></td>
+                        </tr>
+                        <tr>
+                            <td><button onclick="register();return false;">註冊新帳戶</button></td>
+                        </tr>
+                        <tr>
+                            <td class="query">
+                                <p onclick="backloginpop();" style="cursor: pointer;">已經有帳戶了？點此登入</p>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

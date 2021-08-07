@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReadItLater</title>
+    <script>
+        function getData() {
+            var req = new XMLHttpRequest();
+            req.open('get', 'http://127.0.0.1:3000/api/getcontent')
+            req.onload = function () {
+                // 分析JSON資料
+                var content_data = JSON.parse(req.responseText);
+                let main = document.querySelector('.main')
+                let articletitle=document.querySelector('.title')
+                let title = `${content_data.data[0][0].title}`
+                let item = `${content_data.data[0][0].content}`
+                articletitle.insertAdjacentHTML('beforeend', item);
+
+                main.insertAdjacentHTML('beforeend', title);
+
+            }
+            req.send()
+        }
+    </script>
+</head>
+<style>
+    @import url(https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300&display=swap);
+    @import url(https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap);
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap');
+
+
+    * {
+        
+        padding: 0 auto;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 16px;
+
+    }
+
+    p {
+        margin-bottom: 5px;
+        font-size: 22px;
+        line-height: 1.7em;
+    }
+
+    img {
+        
+        line-height: 1;
+        margin: 0 0 .2em;
+        display: block;
+        width: 75%;
+
+    }
+
+
+
+    footer,
+    .copyright {
+        display: none;
+    }
+
+
+    .navforRIL {
+        position: fixed;
+        left: 0;
+        width: 100%;
+        height: 70px;
+        display: flex;
+        z-index: 11;
+        border-bottom: 0.8px solid #AAAAAA;
+        background: #FFFFFF;
+    }
+
+
+
+    .nav_div_h1 {
+        padding: 8px 36px;
+        font-family: 'Playfair Display', serif;
+        font-style: normal;
+        font-size: 25px;
+        line-height: 34px;
+        color: #222;       
+
+    }
+
+    .frame1 {
+        display: flex;
+        flex-direction: row;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+    .main {
+        padding-top: 100px;
+        width: 800px;
+        margin: 0 auto;
+    }
+    .title{
+        margin: .67em 0;
+        font-size: 44px;
+    }
+    h1,h2,h3,h4,h5,h6{
+        font-weight: bolder;
+    }
+    h1{
+        font-size: 22px;
+    }
+    h2{
+        font-size: 20px;
+    }
+    h3{
+        font-size: 18px;
+    }
+    h4{
+        font-size: 16px;
+    }
+    h5{
+        font-size: 14px;
+    }
+    h6{
+        font-size: 12px;
+    }
+</style>
+
+<body onload="getData();">
+
+    <nav class="navforRIL">
+        <div class="nav1">
+            <a class="index" href="http://127.0.0.1:3000/">
+                <div class="nav_div_h1">Read it later</div>
+            </a>
+
+
+        </div>
+
+
+    </nav>
+
+    <main class="main">
+        <h1 class="title"></h1>
+
+    </main>
+    <!-- {{title}}<br> -->
+    <!-- {{content}} -->
+
+</body>
+
+</html>
