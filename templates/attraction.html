@@ -12,7 +12,7 @@
             var url = new URL(getUrlString);
             var param = url.pathname.replace("/attraction/", "")
             var req = new XMLHttpRequest();
-            req.open("get", "http://127.0.0.1:3000/api/attraction/" + param)
+            req.open("get", "http://3.140.25.231/api/attraction/" + param)
 
             req.onload = function () {
 
@@ -170,7 +170,7 @@
                 password: password
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://127.0.0.1:3000/api/user", true)
+            req.open("post", "http://3.140.25.231/api/user", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             let data = JSON.stringify(account); //將物件資料轉成字串
 
@@ -215,7 +215,7 @@
                 password: password
             }
             var req = new XMLHttpRequest();
-            req.open("patch", "http://127.0.0.1:3000/api/user", true)
+            req.open("patch", "http://3.140.25.231/api/user", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             let data = JSON.stringify(account); //將物件資料轉成字串
 
@@ -244,7 +244,7 @@
         //取得登入資料
         function get() {
             var req = new XMLHttpRequest();
-            req.open("get", "http://127.0.0.1:3000/api/user", true)
+            req.open("get", "http://3.140.25.231/api/user", true)
             req.onload = function () {
                 if (req.responseText == '{"data": null}') {
                     console.log('未登入')
@@ -264,7 +264,7 @@
         //登出
         function logout() {
             var req = new XMLHttpRequest();
-            req.open("delete", "http://127.0.0.1:3000/api/user", true)
+            req.open("delete", "http://3.140.25.231/api/user", true)
             req.onload = function () {
                 if (req.status = 200) {
                     console.log('已登出')
@@ -312,7 +312,7 @@
                     alert("請輸入完整資訊")
                 } else {
                     var req = new XMLHttpRequest();
-                    req.open("post", "http://127.0.0.1:3000/api/booking", true)
+                    req.open("post", "http://3.140.25.231/api/booking", true)
                     req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
                     let data = JSON.stringify(bookinginfo); //將物件資料轉成字串
 
@@ -1022,7 +1022,7 @@
 <body onload="getData();">
     <nav>
         <div class="nav">
-            <a class="index" href="http://127.0.0.1:3000/">
+            <a class="index" href="http://3.140.25.231/">
                 <div class="nav_div_h1">臺北一日遊</div>
             </a>
             <div class="frame1">

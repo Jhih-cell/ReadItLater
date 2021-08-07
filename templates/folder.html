@@ -16,7 +16,7 @@
             let url = new URL(getUrlString);
             let param = url.pathname.replace("/folder/", "")
             let req = new XMLHttpRequest();
-            req.open("get", "http://127.0.0.1:3000/api/addlinkbyfolder/"+param)
+            req.open("get", "http://3.140.25.231/api/addlinkbyfolder/"+param)
 
             req.onload = function () {
                 let main = document.querySelector('.main')
@@ -132,7 +132,7 @@
 
             function getnextpage() {
                 var req = new XMLHttpRequest();
-                req.open("get", "http://127.0.0.1:3000/api/attractions?page=" + count + "&keyword=" + keyword)
+                req.open("get", "http://3.140.25.231/api/attractions?page=" + count + "&keyword=" + keyword)
                 req.onload = function () {
                     var infiniteWrap = document.querySelector('.infiniteWrap')
                     // 分析JSON資料
@@ -152,7 +152,7 @@
                         //first image                
                         for (var i = 0; i < itemnum; i++) {
                             let link = document.createElement('a');
-                            let linkhref = "http://127.0.0.1:3000/attraction/" + (count * 12 + i + 1)
+                            let linkhref = "http://3.140.25.231/attraction/" + (count * 12 + i + 1)
                             link.setAttribute("href", linkhref)
                             let content_img = document.createElement('img');
                             content_img.classList.add('img-width');
@@ -195,7 +195,7 @@
                         //first image                
                         for (var i = 0; i < itemnum; i++) {
                             let link = document.createElement('a');
-                            let linkhref = "http://127.0.0.1:3000/attraction/" + content_data.data[i].id
+                            let linkhref = "http://3.140.25.231/attraction/" + content_data.data[i].id
                             link.setAttribute("href", linkhref)
                             let content_img = document.createElement('img');
                             content_img.classList.add('img-width');
@@ -250,7 +250,7 @@
                 ID: id
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://127.0.0.1:3000/api/addlinkdel", true)
+            req.open("post", "http://3.140.25.231/api/addlinkdel", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(articleid); //將物件資料轉成字串
 
@@ -296,7 +296,7 @@
             console.log(JSON.stringify(articleid))
 
             let req = new XMLHttpRequest();
-            req.open("post", "http://127.0.0.1:3000/api/likedstat", true)
+            req.open("post", "http://3.140.25.231/api/likedstat", true)
             req.setRequestHeader("Cotnet-type", "application/json");
             let data = JSON.stringify(articleid);
 
@@ -351,7 +351,7 @@
                 password: password
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://127.0.0.1:3000/api/user", true)
+            req.open("post", "http://3.140.25.231/api/user", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(account); //將物件資料轉成字串
             let namemsg = document.getElementById('namemsg')
@@ -396,7 +396,7 @@
                 password: password
             }
             var req = new XMLHttpRequest();
-            req.open("patch", "http://127.0.0.1:3000/api/user", true)
+            req.open("patch", "http://3.140.25.231/api/user", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             let data = JSON.stringify(account); //將物件資料轉成字串
 
@@ -425,7 +425,7 @@
         }
         function get() {
             var req = new XMLHttpRequest();
-            req.open("get", "http://127.0.0.1:3000/api/user", true)
+            req.open("get", "http://3.140.25.231/api/user", true)
             req.onload = function () {
 
                 if (req.responseText == '{"data": null}') {
@@ -446,7 +446,7 @@
 
         function logout() {
             var req = new XMLHttpRequest();
-            req.open("delete", "http://127.0.0.1:3000/api/user", true)
+            req.open("delete", "http://3.140.25.231/api/user", true)
             req.onload = function () {
                 if (req.status = 200) {
                     console.log('已登出')
@@ -483,7 +483,7 @@
                 url: urlhref,
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://127.0.0.1:3000/api/addlink", true)
+            req.open("post", "http://3.140.25.231/api/addlink", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(link); //將物件資料轉成字串
 
@@ -509,7 +509,7 @@
                 url: url,
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://127.0.0.1:3000/api/getcontent", true)
+            req.open("post", "http://3.140.25.231/api/getcontent", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(link); //將物件資料轉成字串
 
@@ -1097,7 +1097,7 @@
 
     <nav>
         <div class="nav">
-            <a class="index" href="http://127.0.0.1:3000/">
+            <a class="index" href="http://3.140.25.231/">
                 <div class="nav_div_h1">Read it later</div>
             </a>
 
