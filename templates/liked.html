@@ -13,7 +13,7 @@
         //抓第一頁
         function getData() {
             let req = new XMLHttpRequest();
-            req.open("get", "http://3.140.25.231/api/likedstat?page=0")
+            req.open("get", "http://127.0.0.1:3000/api/likedstat?page=0")
 
             req.onload = function () {
                 let main = document.querySelector('.main')
@@ -110,123 +110,14 @@
                         keyword = document.getElementById('Str').value
                         setTimeout(getnextpage, 100);
                         lock = true;
-                        // getnextpage();
+                        
                     }
                 }
             } else {
                 return
             }
 
-            function getnextpage() {
-                var req = new XMLHttpRequest();
-                req.open("get", "http://3.140.25.231/api/attractions?page=" + count + "&keyword=" + keyword)
-                req.onload = function () {
-                    var infiniteWrap = document.querySelector('.infiniteWrap')
-                    // 分析JSON資料
-                    var content_data = JSON.parse(req.responseText);
-                    var itemnum = content_data.data.length
-                    console.log("這頁要render幾個item：" + itemnum)
-                    //new item
-                    var item = `<div class="pictitle">
-            <div class="pictitle1${count}"></div>
-            <div class="dset"><span class="pictitle2${count}"></span></div>
-            <div class="dset"><span class="pictitle3${count}"></span><span class="pictitle4${count}"></span></div>
-            </div>`
-                    for (var i = 0; i < itemnum; i++) {
-                        infiniteWrap.insertAdjacentHTML('beforeend', item);
-                    }
-                    if (keyword == "") {
-                        //first image                
-                        for (var i = 0; i < itemnum; i++) {
-                            let link = document.createElement('a');
-                            let linkhref = "http://3.140.25.231/attraction/" + (count * 12 + i + 1)
-                            link.setAttribute("href", linkhref)
-                            let content_img = document.createElement('img');
-                            content_img.classList.add('img-width');
-                            var imgSrc = content_data.data[i][0].images[0];
-                            content_img.setAttribute("src", imgSrc);
-                            link.appendChild(content_img)
-                            document.querySelectorAll('.pictitle1' + count)[i].appendChild(link);
-                        }
-
-                        //name
-                        for (var i = 0; i < itemnum; i++) {
-                            let Title = document.createElement('div');
-                            Title.classList.add('drawing1');
-                            //加入文章名稱
-                            var textNode = document.createTextNode(content_data.data[i][0].name);
-                            Title.appendChild(textNode);
-                            document.querySelectorAll('.pictitle2' + count)[i].appendChild(Title)
-                        }
-                        //MRT
-                        for (var i = 0; i < itemnum; i++) {
-                            let Title = document.createElement('div');
-                            Title.classList.add('drawing2');
-                            //加入文章名稱
-                            var textNode = document.createTextNode(content_data.data[i][0].mrt);
-                            Title.appendChild(textNode);
-                            document.querySelectorAll('.pictitle3' + count)[i].appendChild(Title)
-                        }
-                        //genre
-                        for (var i = 0; i < itemnum; i++) {
-                            let Title = document.createElement('div');
-                            Title.classList.add('drawing3');
-                            //加入文章名稱
-                            var textNode = document.createTextNode(content_data.data[i][0].category);
-                            Title.appendChild(textNode);
-                            document.querySelectorAll('.pictitle4' + count)[i].appendChild(Title)
-                        }
-                        lock = false;
-                    } else {
-
-                        //first image                
-                        for (var i = 0; i < itemnum; i++) {
-                            let link = document.createElement('a');
-                            let linkhref = "http://3.140.25.231/attraction/" + content_data.data[i].id
-                            link.setAttribute("href", linkhref)
-                            let content_img = document.createElement('img');
-                            content_img.classList.add('img-width');
-                            var imgSrc = content_data.data[i].images[0];
-                            content_img.setAttribute("src", imgSrc);
-                            link.appendChild(content_img)
-                            document.querySelectorAll('.pictitle1' + count)[i].appendChild(link);
-                        }
-
-                        //name
-                        for (var i = 0; i < itemnum; i++) {
-                            let Title = document.createElement('div');
-                            Title.classList.add('drawing1');
-                            //加入文章名稱
-                            var textNode = document.createTextNode(content_data.data[i].name);
-                            Title.appendChild(textNode);
-                            document.querySelectorAll('.pictitle2' + count)[i].appendChild(Title)
-                        }
-                        //MRT
-                        for (var i = 0; i < itemnum; i++) {
-                            let Title = document.createElement('div');
-                            Title.classList.add('drawing2');
-                            //加入文章名稱
-                            var textNode = document.createTextNode(content_data.data[i].mrt);
-                            Title.appendChild(textNode);
-                            document.querySelectorAll('.pictitle3' + count)[i].appendChild(Title)
-                        }
-                        //genre
-                        for (var i = 0; i < itemnum; i++) {
-                            let Title = document.createElement('div');
-                            Title.classList.add('drawing3');
-                            //加入文章名稱
-                            var textNode = document.createTextNode(content_data.data[i].category);
-                            Title.appendChild(textNode);
-                            document.querySelectorAll('.pictitle4' + count)[i].appendChild(Title)
-                        }
-                        lock = false;
-                    }
-
-
-                }
-                req.send();
-
-            }
+            
         })
 
 
@@ -237,7 +128,7 @@
                 ID: id
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://3.140.25.231/api/addlinkdel", true)
+            req.open("post", "http://127.0.0.1:3000/api/addlinkdel", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(articleid); //將物件資料轉成字串
 
@@ -283,7 +174,7 @@
             console.log(JSON.stringify(articleid))
 
             let req = new XMLHttpRequest();
-            req.open("post", "http://3.140.25.231/api/likedstat", true)
+            req.open("post", "http://127.0.0.1:3000/api/likedstat", true)
             req.setRequestHeader("Cotnet-type", "application/json");
             let data = JSON.stringify(articleid);
 
@@ -338,7 +229,7 @@
                 password: password
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://3.140.25.231/api/user", true)
+            req.open("post", "http://127.0.0.1:3000/api/user", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(account); //將物件資料轉成字串
             let namemsg = document.getElementById('namemsg')
@@ -383,7 +274,7 @@
                 password: password
             }
             var req = new XMLHttpRequest();
-            req.open("patch", "http://3.140.25.231/api/user", true)
+            req.open("patch", "http://127.0.0.1:3000/api/user", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             let data = JSON.stringify(account); //將物件資料轉成字串
 
@@ -412,7 +303,7 @@
         }
         function get() {
             var req = new XMLHttpRequest();
-            req.open("get", "http://3.140.25.231/api/user", true)
+            req.open("get", "http://127.0.0.1:3000/api/user", true)
             req.onload = function () {
 
                 if (req.responseText == '{"data": null}') {
@@ -434,7 +325,7 @@
 
         function logout() {
             var req = new XMLHttpRequest();
-            req.open("delete", "http://3.140.25.231/api/user", true)
+            req.open("delete", "http://127.0.0.1:3000/api/user", true)
             req.onload = function () {
                 if (req.status = 200) {
                     console.log('已登出')
@@ -471,7 +362,7 @@
                 url: urlhref,
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://3.140.25.231/api/addlink", true)
+            req.open("post", "http://127.0.0.1:3000/api/addlink", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(link); //將物件資料轉成字串
 
@@ -496,7 +387,7 @@
                 url: url,
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://3.140.25.231/api/getcontent", true)
+            req.open("post", "http://127.0.0.1:3000/api/getcontent", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(link); //將物件資料轉成字串
 
@@ -518,7 +409,7 @@
             }
             let emptyinput = document.querySelector(".tobefilled")
             let req = new XMLHttpRequest();
-            req.open('post', 'http://3.140.25.231/api/folder', true)
+            req.open('post', 'http://127.0.0.1:3000/api/folder', true)
             req.setRequestHeader("Content-type", "application/json");
             let data = JSON.stringify(folder);
             req.onload = function () {
@@ -542,7 +433,7 @@
 
         function renderfolder() {
             let req = new XMLHttpRequest();
-            req.open("get", "http://3.140.25.231/api/getfolder", true)
+            req.open("get", "http://127.0.0.1:3000/api/getfolder", true)
             req.onload = function () {
                 let addsection = document.querySelector('.add_folder')
                 let emptyinput = document.querySelector(".tobefilled")
@@ -1141,7 +1032,7 @@
 
     <nav>
         <div class="nav">
-            <a class="index" href="http://3.140.25.231/">
+            <a class="index" href="http://127.0.0.1:3000/">
                 <div class="nav_div_h1">Read it later</div>
             </a>
 
