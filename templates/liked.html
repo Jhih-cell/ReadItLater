@@ -13,7 +13,7 @@
         //抓第一頁
         function getData() {
             let req = new XMLHttpRequest();
-            req.open("get", "http://3.140.25.231/api/likedstat?page=0")
+            req.open("get", "http://localhost/api/likedstat?page=0")
 
             req.onload = function () {
                 let main = document.querySelector('.main')
@@ -128,7 +128,7 @@
                 ID: id
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://3.140.25.231/api/addlinkdel", true)
+            req.open("post", "http://localhost/api/addlinkdel", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(articleid); //將物件資料轉成字串
 
@@ -174,7 +174,7 @@
             console.log(JSON.stringify(articleid))
 
             let req = new XMLHttpRequest();
-            req.open("post", "http://3.140.25.231/api/likedstat", true)
+            req.open("post", "http://localhost/api/likedstat", true)
             req.setRequestHeader("Cotnet-type", "application/json");
             let data = JSON.stringify(articleid);
 
@@ -229,7 +229,7 @@
                 password: password
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://3.140.25.231/api/user", true)
+            req.open("post", "http://localhost/api/user", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(account); //將物件資料轉成字串
             let namemsg = document.getElementById('namemsg')
@@ -274,7 +274,7 @@
                 password: password
             }
             var req = new XMLHttpRequest();
-            req.open("patch", "http://3.140.25.231/api/user", true)
+            req.open("patch", "http://localhost/api/user", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             let data = JSON.stringify(account); //將物件資料轉成字串
 
@@ -303,7 +303,7 @@
         }
         function get() {
             var req = new XMLHttpRequest();
-            req.open("get", "http://3.140.25.231/api/user", true)
+            req.open("get", "http://localhost/api/user", true)
             req.onload = function () {
 
                 if (req.responseText == '{"data": null}') {
@@ -325,7 +325,7 @@
 
         function logout() {
             var req = new XMLHttpRequest();
-            req.open("delete", "http://3.140.25.231/api/user", true)
+            req.open("delete", "http://localhost/api/user", true)
             req.onload = function () {
                 if (req.status = 200) {
                     console.log('已登出')
@@ -362,7 +362,7 @@
                 url: urlhref,
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://3.140.25.231/api/addlink", true)
+            req.open("post", "http://localhost/api/addlink", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(link); //將物件資料轉成字串
 
@@ -387,7 +387,7 @@
                 url: url,
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://3.140.25.231/api/getcontent", true)
+            req.open("post", "http://localhost/api/getcontent", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(link); //將物件資料轉成字串
 
@@ -409,7 +409,7 @@
             }
             let emptyinput = document.querySelector(".tobefilled")
             let req = new XMLHttpRequest();
-            req.open('post', 'http://3.140.25.231/api/folder', true)
+            req.open('post', 'http://localhost/api/folder', true)
             req.setRequestHeader("Content-type", "application/json");
             let data = JSON.stringify(folder);
             req.onload = function () {
@@ -433,7 +433,7 @@
 
         function renderfolder() {
             let req = new XMLHttpRequest();
-            req.open("get", "http://3.140.25.231/api/getfolder", true)
+            req.open("get", "http://localhost/api/getfolder", true)
             req.onload = function () {
                 let addsection = document.querySelector('.add_folder')
                 let emptyinput = document.querySelector(".tobefilled")
@@ -1032,7 +1032,7 @@
 
     <nav>
         <div class="nav">
-            <a class="index" href="http://3.140.25.231/">
+            <a class="index" href="http://localhost/">
                 <div class="nav_div_h1">Read it later</div>
             </a>
 
