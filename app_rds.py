@@ -27,6 +27,9 @@ db_settings = {
     "db" : "website",
 }
 RDSconn = pymysql.connect(**db_settings)
+RDSconn.ping(reconnect=True)
+print(RDSconn.ping(reconnect=True))
+
 
 #MySQL
 host=os.getenv("host")
@@ -74,6 +77,7 @@ def user_get():
         user_ID = session['username']
         
     # 取出id
+        RDSconn.ping()
         with RDSconn.cursor() as cursor:
             # 新增資料指令
             command = "SELECT ID FROM user WHERE ID=%s"
@@ -85,6 +89,7 @@ def user_get():
             id = int(str(id)[2:len(id)-5])
         #         # 取出使用者姓名
             command = "SELECT username FROM user WHERE ID=%s"
+            RDSconn.ping()
             cur=RDSconn.cursor()
             cur.execute(command, (user_ID,))
             name = cur.fetchall()
@@ -116,8 +121,8 @@ def user_post():
         name = data['name']
         password = data['password']
         h = hashing.hash_value(password, salt='abcd')
-        password = h   
-        
+        password_hashed = h   
+        RDSconn.ping()
         with RDSconn.cursor() as cursor:
             # 新增資料指令
             command = "SELECT username FROM user where email=%s"
@@ -133,17 +138,41 @@ def user_post():
                             }
             return json.dumps(failmessage, ensure_ascii=False, indent=2), 400, {"Content-Type": "application/json"}
         else:
-            
+            RDSconn.ping()
             # 建立Cursor物件
             with RDSconn.cursor() as cursor:
                 # 新增資料SQL語法                
-                cursor.execute("INSERT INTO user (username,email,password) VALUES (%s, %s, %s)",(name, email, password))
+                cursor.execute("INSERT INTO user (username,email,password) VALUES (%s, %s, %s)",(name, email, password_hashed))
                 RDSconn.commit()
                 successmessage = {
                                     "ok": True,
                                     }
+                val_hash = hashing.hash_value(password, salt='abcd')
+                    
+                if hashing.check_value(val_hash, password, salt='abcd'):
+                    RDSconn.ping()
+                    with RDSconn.cursor() as cursor:
+                        # 新增資料指令
+                        command = "SELECT ID FROM user WHERE email=%s and password=%s"
+                        # 執行指令
+                        cursor.execute(command, (email, val_hash))
+                        # 取得所有資料
+                        result = cursor.fetchall()
+                        session['username'] = result[0][0]
 
-                return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
+                        successmessage = {
+                                        "ok": True
+                                        }
+                        return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
+                else:
+                        failmessage = {
+                            "error": True,
+                            "message": "帳號或密碼錯誤"
+                        }
+
+                        return json.dumps(failmessage, ensure_ascii=False, indent=2), 400, {"Content-Type": "application/json"}
+
+                
     except:
         failmessage2 = {
             "error": True,
@@ -164,7 +193,7 @@ def user_patch():
         val_hash = hashing.hash_value(password, salt='abcd')
                     
         if hashing.check_value(val_hash, password, salt='abcd'):
-                
+            RDSconn.ping()
             with RDSconn.cursor() as cursor:
                 # 新增資料指令
                 command = "SELECT ID FROM user WHERE email=%s and password=%s"
@@ -221,7 +250,7 @@ def addlink():
             if pic=='None':
                 pic='https://img.icons8.com/ios/100/000000/e-learning-2.png'
             
-            
+            RDSconn.ping()
             with RDSconn.cursor() as cursor:
                 # 新增資料指令
                 command = "SELECT ID FROM url where url=%s AND user_ID=%s"
@@ -237,9 +266,11 @@ def addlink():
                                 }
                 return json.dumps(failmessage, ensure_ascii=False, indent=2), 400, {"Content-Type": "application/json"}
             else:
+                RDSconn.ping()
                 cur=RDSconn.cursor()
                 cur.execute("INSERT INTO url (url, title, des, pic, user_ID) VALUES (%s,%s,%s,%s,%s)",(url,tilte,des,pic,user_ID))
                 RDSconn.commit()
+                RDSconn.ping()
                 cur=RDSconn.cursor()
                 cur.execute("INSERT INTO article (url, user_ID) VALUES (%s,%s)",(url,user_ID))
                 RDSconn.commit()
@@ -254,7 +285,7 @@ def renderlink():
 
     if 'username' in session:
         user_ID = session['username']
-        
+        RDSconn.ping()
         with RDSconn.cursor() as cursor:
             # 新增資料指令
             command = "SELECT * FROM website.url  WHERE user_ID = %s ;"
@@ -279,6 +310,9 @@ def renderlink():
                 "data": data
             }
             return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
+    else:
+        failmessage = {"data": None}
+        return json.dumps(failmessage, ensure_ascii=False, indent=2), 500, {"Content-Type": "application/json"}
                 
 @app.route("/api/addlinkdel" , methods=['POST'])
 def del_article():
@@ -287,7 +321,7 @@ def del_article():
         data = request.get_data()
         data = json.loads(data)
         url = data['ID']
-        
+        RDSconn.ping()
         # 建立Cursor物件
         with RDSconn.cursor() as cursor:
             # 刪除特定資料指令
@@ -296,6 +330,7 @@ def del_article():
             cursor.execute(command, (url,user_ID))
             #儲存變更
             RDSconn.commit()
+            RDSconn.ping()
             cur=RDSconn.cursor()
             # 刪除特定資料指令
             command = "DELETE FROM article WHERE url=%s AND user_ID = %s"
@@ -350,7 +385,7 @@ def likedstat():
         data=json.loads(data)
         articleID=data['ID']
         liked = data['liked']
-        
+        RDSconn.ping()
         # 建立Cursor物件
         with RDSconn.cursor() as cursor:
             # 修改資料SQL語法
@@ -371,7 +406,7 @@ def likedarticle():
             user_ID= session['username']
             pageind = int(request.args.get('page'))
             pagenum=0
-          
+            RDSconn.ping()
             with RDSconn.cursor() as cursor:
                 # 新增資料指令
                 command = "SELECT * FROM url WHERE user_ID = %s and liked = 'Y';"
@@ -411,7 +446,7 @@ def addfolderapi():
             data = request.get_data()
             data=json.loads(data)
             foldername=data['name']
-
+            RDSconn.ping()
             with RDSconn.cursor() as cursor:
                 cursor.execute("INSERT INTO folder (foldername,user_ID) VALUES (%s,%s)",(foldername,user_ID))
                 RDSconn.commit()
@@ -424,7 +459,7 @@ def addfolderapi():
 def getfoldername():
         if 'username' in session:
             user_ID= session['username']
-           
+            RDSconn.ping()
             with RDSconn.cursor() as cursor:
                 # 新增資料指令
                 command = "SELECT  DISTINCT website.folder.foldername FROM  website.folder WHERE website.folder.user_ID =  %s;"
@@ -452,7 +487,7 @@ def addlinkbyfolder():
         data=json.loads(data)
         foldername=data['foldername']
         url=data['url']
-        
+        RDSconn.ping()
         with RDSconn.cursor() as cursor:
                 cursor.execute("INSERT INTO folder (foldername,user_ID,url) VALUES (%s,%s,%s)",(foldername,user_ID,url))
                 RDSconn.commit()
@@ -468,6 +503,7 @@ def addlinkbyfolder_getcontent(folder):
             user_ID = session['username']
             pageind = 0
             # pagenum=0
+            RDSconn.ping()
             with RDSconn.cursor() as cursor:
                 # 新增資料指令
                 command = "SELECT * FROM website.folder JOIN website.url ON website.folder.user_ID=website.url.user_ID AND website.folder.url = website.url.url WHERE  website.folder.user_ID = %s AND website.folder.foldername = %s ;"
@@ -507,7 +543,7 @@ def findoption():
     key = (request.args.get('srckey'))
     if 'username' in session:
         user_ID = session['username']          
-        
+        RDSconn.ping()
         with RDSconn.cursor() as cursor:
             # 新增資料指令
             command ="SELECT * FROM keyword WHERE keyword = %s AND user_ID = %s AND title is not null;"
@@ -535,7 +571,7 @@ def renderselected():
     link=request.args.get('link')
     if 'username' in session:
         user_ID = session['username']
-        
+        RDSconn.ping()
         with RDSconn.cursor() as cursor:
             # 新增資料指令
             command ="SELECT * FROM website.url  WHERE user_ID = %s AND url= %s ;"
