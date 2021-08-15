@@ -338,6 +338,10 @@ def del_article():
             cur.execute(command, (url,user_ID))
             #儲存變更
             RDSconn.commit()
+            cur2=RDSconn.cursor()
+            command = "DELETE FROM keyword WHERE url=%s AND user_ID = %s"
+            cur2.execute(command, (url,user_ID))
+            RDSconn.commit()
             successmessage = {
                             "ok": True
                             }
