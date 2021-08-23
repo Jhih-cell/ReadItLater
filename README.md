@@ -8,9 +8,9 @@ password: lulu<br>
 
 **Skills used:**<br>
 **Flask, AWS RDS**　Integrate member account functions, article saving function, archiving function.<br>
-**Database design（engine: MySQL）**<br>
-Perform normalization from 1NF to 3NF<br>
-Improve query performance by adding a compound index on keywords<br>
+**Database design（engine: MySQL）**<br>　
+`*`Perform normalization from 1NF to 3NF<br>　
+`*`Improve query performance by adding a compound index on keywords<br>
 **AWS cloud service**　Deploys the website online with EC2.<br>
 **Python flask_hashing**　password pashing to enhance security<br>
 **Python Beautiful Soup, Readability**　Analyze HTML DOM content of articles online.<br>
