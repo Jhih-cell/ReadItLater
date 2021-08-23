@@ -17,5 +17,5 @@ password: lulu<br>
 **Python jieba**　Splits words in order to search for keywords quicker.<br>
 **HTML, CSS, JavaScript, RWD**　Complete user interface.<br>
 
-**Database structure**
-![image](https://github.com/Jhih-cell/ReadItLater/blob/main/DB.JPG)
+**Database structure**<br>
+![image](https://github.com/Jhih-cell/ReadItLater/blob/main/dbstructure.JPG)
