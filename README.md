@@ -18,4 +18,4 @@ password: lulu<br>
 **HTML, CSS, JavaScript, RWD**　Complete user interface.<br>
 
 **Database structure**<br>
-![image](https://github.com/Jhih-cell/ReadItLater/blob/main/dbstructure.JPG)
+![image](https://github.com/Jhih-cell/ReadItLater/blob/main/db.png)
