@@ -1,9 +1,12 @@
 # ReadItLater
-**Save it, read it later!**<br><br>
+**Save it, read it later!**<br>
 [Click me to the online website](http://3.140.25.231:3000/)<br><br>
-**Information for test ↓** (you can also create on your own)<br>
+**Information for test ↓** (you can also sign up on your own)<br>
 account: maru@mail.com<br>
 password: lulu<br>
+
+**Main feature**<br>Save and Read<br>
+![image](https://j.gifs.com/NOY59p.gif)<br>
 
 
 **Skills used:**<br>
