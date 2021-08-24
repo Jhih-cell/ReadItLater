@@ -1,7 +1,7 @@
 # ReadItLater
 **Save it, read it later!**<br><br>
 [Click me to online website](http://3.140.25.231:3000/)<br><br>
-**Information for test ↓**(you can also create by your own)<br>
+**Information for test ↓** (you can also create on your own)<br>
 account: maru@mail.com<br>
 password: lulu<br>
 
