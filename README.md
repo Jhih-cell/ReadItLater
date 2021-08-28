@@ -7,6 +7,10 @@ password: lulu<br>
 
 **Main feature**<br>Save and Read<br>
 ![image](https://j.gifs.com/NOY59p.gif)<br>
+**other functions**<br>'Like' the article what you are interested in<br>
+![image](https://github.com/Jhih-cell/ReadItLater/blob/main/liked.gif)<br>
+Create your own folder to classify articles
+![image](https://github.com/Jhih-cell/ReadItLater/blob/main/folders.gif)<br>
 
 
 **Skills used:**<br>
