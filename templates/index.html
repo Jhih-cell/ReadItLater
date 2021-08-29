@@ -13,8 +13,9 @@
         //抓第一頁
         function getData() {
 
+
             var req = new XMLHttpRequest();
-            req.open("get", "http://3.140.25.231/api/addlink")
+            req.open("get", "http://127.0.0.1:3000/api/addlink")
 
             req.onload = function () {
 
@@ -83,15 +84,17 @@
                     }
                     let bt2 = document.getElementById('bt2');
                     bt2.innerHTML = '<div class="bt2" onclick="logout();">log out</div>';
-                    // get();
+
                     renderfolder();
 
                 } else {
-                        let attr = document.querySelector('.attr');
-                        attr.innerHTML = `<div class="welcomescene"><img src="{{ url_for('static', filename='images/welcome.gif') }}" alt="">
+
+
+                    let attr = document.querySelector('.attr');
+                    attr.innerHTML = `<div class="welcomescene"><img src="{{ url_for('static', filename='images/welcome.gif') }}" alt="">
                         <button class="welcomebtn" onclick="popup2();" >Create an account</button></div>`
-                        let bt1 = document.querySelector('.bt1');
-                        bt1.innerText = ""
+                    let bt1 = document.querySelector('.bt1');
+                    bt1.innerText = ""
 
                 }
 
@@ -140,7 +143,7 @@
 
             console.log(x);
             let req = new XMLHttpRequest();
-            req.open("get", "http://3.140.25.231/api/findoption?srckey=" + x, true)
+            req.open("get", "http://127.0.0.1:3000/api/findoption?srckey=" + x, true)
             req.onload = function () {
                 let optiondata = req.responseText
                 if (req.status == 200) {
@@ -183,7 +186,7 @@
                 ID: id
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://3.140.25.231/api/addlinkdel", true)
+            req.open("post", "http://127.0.0.1:3000/api/addlinkdel", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(articleid); //將物件資料轉成字串
 
@@ -229,7 +232,7 @@
             console.log(JSON.stringify(articleid))
 
             let req = new XMLHttpRequest();
-            req.open("post", "http://3.140.25.231/api/likedstat", true)
+            req.open("post", "http://127.0.0.1:3000/api/likedstat", true)
             req.setRequestHeader("Cotnet-type", "application/json");
             let data = JSON.stringify(articleid);
 
@@ -284,7 +287,7 @@
                 password: password
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://3.140.25.231/api/user", true)
+            req.open("post", "http://127.0.0.1:3000/api/user", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(account); //將物件資料轉成字串
             let namemsg = document.getElementById('namemsg')
@@ -329,9 +332,9 @@
                 email: email,
                 password: password
             }
-            
+
             var req = new XMLHttpRequest();
-            req.open("patch", "http://3.140.25.231/api/user", true)
+            req.open("patch", "http://127.0.0.1:3000/api/user", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             let data = JSON.stringify(account); //將物件資料轉成字串
 
@@ -360,16 +363,18 @@
         }
         function get() {
             var req = new XMLHttpRequest();
-            req.open("get", "http://3.140.25.231/api/user", true)
+            req.open("get", "http://127.0.0.1:3000/api/user", true)
             req.onload = function () {
 
                 if (req.status == 200) {
                     console.log('已登入')
 
                     // let bt2 = document.getElementById('bt2');
-                    bt2.innerHTML = '<div class="bt2" onclick="logout();">log out</div>';
-                    renderfolder();
+                    // bt2.innerHTML = '<div class="bt2" onclick="logout();">log out</div>';
+                    // renderfolder();
 
+                } else {
+                    popup()
                 }
 
             }
@@ -378,7 +383,7 @@
 
         function logout() {
             var req = new XMLHttpRequest();
-            req.open("delete", "http://3.140.25.231/api/user", true)
+            req.open("delete", "http://127.0.0.1:3000/api/user", true)
             req.onload = function () {
                 if (req.status = 200) {
                     console.log('已登出')
@@ -401,8 +406,21 @@
 
         //add an article
         function popup3() {
-            document.getElementById('popup3').classList.remove("overlay");
-            document.getElementById('popup3').classList.add("overlay_target")
+            var req = new XMLHttpRequest();
+            req.open("get", "http://127.0.0.1:3000/api/user", true)
+            req.onload = function () {
+
+                if (req.status == 200) {
+                    document.getElementById('popup3').classList.remove("overlay");
+                    document.getElementById('popup3').classList.add("overlay_target")
+
+                } else {
+                    popup()
+                }
+
+            }
+            req.send();
+
 
         }
         function endpopup3() {
@@ -415,7 +433,7 @@
                 url: urlhref,
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://3.140.25.231/api/addlink", true)
+            req.open("post", "http://127.0.0.1:3000/api/addlink", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(link); //將物件資料轉成字串
 
@@ -440,7 +458,7 @@
                 url: url,
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://3.140.25.231/api/getcontent", true)
+            req.open("post", "http://127.0.0.1:3000/api/getcontent", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(link); //將物件資料轉成字串
 
@@ -461,7 +479,7 @@
             }
             let emptyinput = document.querySelector(".tobefilled")
             let req = new XMLHttpRequest();
-            req.open('post', 'http://3.140.25.231/api/folder', true)
+            req.open('post', 'http://127.0.0.1:3000/api/folder', true)
             req.setRequestHeader("Content-type", "application/json");
             let data = JSON.stringify(folder);
             req.onload = function () {
@@ -470,10 +488,10 @@
                     let addsection = document.querySelector('.side-menu')
                     let item =
                         `<a href="/folder/${foldername}">
-                            <img class="resulticon" src="{{ url_for('static', filename='images/icons8-opened-folder-50.png') }}" alt=""><input value="${foldername}" onchange="addFolder(this.value);" id="folder_inline_add_field" type="text" class="folder_inline_add_field"
+                            <img class="resulticon" src="{{ url_for('static', filename='images/icons8-opened-folder-50.png') }}" alt=""></a><input value="${foldername}" onchange="addFolder(this.value);" id="folder_inline_add_field" type="text" class="folder_inline_add_field"
                 name="folder[title]" placeholder="Add Folder" maxlength="200" aria-label="Add Folder">
                     </input>
-                    </a>`
+                    `
                     emptyinput.value = ""
                     addsection.insertAdjacentHTML('beforeend', item);
                 } else {
@@ -484,7 +502,7 @@
         }
         function renderfolder() {
             let req = new XMLHttpRequest();
-            req.open("get", "http://3.140.25.231/api/getfolder", true)
+            req.open("get", "http://127.0.0.1:3000/api/getfolder", true)
             req.onload = function () {
                 let addsection = document.querySelector('.add_folder')
                 let emptyinput = document.querySelector(".tobefilled")
@@ -528,14 +546,14 @@
 
                 //try to render folder here
                 let req = new XMLHttpRequest();
-                req.open("get", "http://3.140.25.231/api/getfolder", true)
+                req.open("get", "http://127.0.0.1:3000/api/getfolder", true)
                 req.onload = function () {
 
                     // 分析JSON資料
                     console.log(req.response)
                     let content_data = JSON.parse(req.responseText);
                     total = JSON.parse(req.response).data.length - 1
-                    let item_default=`<option grade="0" value="${x}" >Move</option>`
+                    let item_default = `<option grade="0" value="${x}" >Move</option>`
                     select_folder.insertAdjacentHTML('afterbegin', item_default);
 
                     for (var i = total; i >= 0; i--) {
@@ -543,8 +561,8 @@
                         let item = `<option grade="${i}" value="${x}" >${foldertextNode}</option>`
                         select_folder.insertAdjacentHTML('afterbegin', item);
                     }
-                    
-                    
+
+
 
                 }
                 req.send();
@@ -567,7 +585,7 @@
             }
             console.log(data)
             let req = new XMLHttpRequest();
-            req.open('post', 'http://3.140.25.231/api/addlinkbyfolder', true)
+            req.open('post', 'http://127.0.0.1:3000/api/addlinkbyfolder', true)
             req.setRequestHeader("Content-type", "application/json");
             data = JSON.stringify(data);
             req.onload = function () {
@@ -1006,7 +1024,7 @@
     }
 
     .form input {
-        width: 310px;
+        
         height: 35px;
         background: #FFFFFF;
         border: 1px solid #CCCCCC;
@@ -1063,7 +1081,7 @@
     }
 
     .form h3 {
-        width: 310px;
+        
         height: 27px;
         font-family: Noto Sans TC;
         font-style: normal;
@@ -1215,7 +1233,7 @@
 
     <nav>
         <div class="nav">
-            <a class="index" href="http://3.140.25.231/">
+            <a class="index" href="http://127.0.0.1:3000/">
                 <div class="nav_div_h1">Read it later</div>
             </a>
 

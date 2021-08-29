@@ -282,7 +282,7 @@ def addlink():
 
 @app.route("/api/addlink", methods=['GET'])
 def renderlink():
-
+    
     if 'username' in session:
         user_ID = session['username']
         RDSconn.ping()
