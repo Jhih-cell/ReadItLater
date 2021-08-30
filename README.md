@@ -1,10 +1,7 @@
 # Read It Later
 **Save it, read it later!**<br>
-[Click me to the online website](http://3.140.25.231:3000/)<br><br>
-**Information for test ↓** (you can also sign up on your own)<br>
-account: maru@mail.com<br>
-password: lulu<br>
-article: https://okapi.books.com.tw/article/13521?loc=rank_006<br>
+[Click me to the online website](http://3.140.25.231/)<br><br>
+
 
 **Main feature**<br>
 1. Save online artiles with Python BeautifulSoup<br>
