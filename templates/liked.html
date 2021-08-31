@@ -13,7 +13,7 @@
         //抓第一頁
         function getData() {
             let req = new XMLHttpRequest();
-            req.open("get", "http://127.0.0.1:3000/api/likedstat?page=0")
+            req.open("get", window.location.origin +"/api/likedstat?page=0")
 
             req.onload = function () {
                 let main = document.querySelector('.main')
@@ -128,7 +128,7 @@
                 ID: id
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://127.0.0.1:3000/api/addlinkdel", true)
+            req.open("post", window.location.origin +"/api/addlinkdel", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(articleid); //將物件資料轉成字串
 
@@ -174,7 +174,7 @@
             console.log(JSON.stringify(articleid))
 
             let req = new XMLHttpRequest();
-            req.open("post", "http://127.0.0.1:3000/api/likedstat", true)
+            req.open("post", window.location.origin +"/api/likedstat", true)
             req.setRequestHeader("Cotnet-type", "application/json");
             let data = JSON.stringify(articleid);
 
@@ -229,7 +229,7 @@
                 password: password
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://127.0.0.1:3000/api/user", true)
+            req.open("post", window.location.origin +"/api/user", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(account); //將物件資料轉成字串
             let namemsg = document.getElementById('namemsg')
@@ -275,7 +275,7 @@
                 password: password
             }
             var req = new XMLHttpRequest();
-            req.open("patch", "http://127.0.0.1:3000/api/user", true)
+            req.open("patch", window.location.origin +"/api/user", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             let data = JSON.stringify(account); //將物件資料轉成字串
 
@@ -304,7 +304,7 @@
         }
         function get() {
             var req = new XMLHttpRequest();
-            req.open("get", "http://127.0.0.1:3000/api/user", true)
+            req.open("get", window.location.origin +"/api/user", true)
             req.onload = function () {
 
                 if (req.responseText == '{"data": null}') {
@@ -326,7 +326,7 @@
 
         function logout() {
             var req = new XMLHttpRequest();
-            req.open("delete", "http://127.0.0.1:3000/api/user", true)
+            req.open("delete", window.location.origin +"/api/user", true)
             req.onload = function () {
                 if (req.status = 200) {
                     console.log('已登出')
@@ -350,7 +350,7 @@
         //add an article
         function popup3() {
             var req = new XMLHttpRequest();
-            req.open("get", "http://127.0.0.1:3000/api/user", true)
+            req.open("get", window.location.origin +"/api/user", true)
             req.onload = function () {
 
                 if (req.status == 200) {
@@ -376,7 +376,7 @@
                 url: urlhref,
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://127.0.0.1:3000/api/addlink", true)
+            req.open("post", window.location.origin +"/api/addlink", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(link); //將物件資料轉成字串
 
@@ -401,7 +401,7 @@
                 url: url,
             }
             var req = new XMLHttpRequest();
-            req.open("post", "http://127.0.0.1:3000/api/getcontent", true)
+            req.open("post", window.location.origin +"/api/getcontent", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(link); //將物件資料轉成字串
 
@@ -423,7 +423,7 @@
             }
             let emptyinput = document.querySelector(".tobefilled")
             let req = new XMLHttpRequest();
-            req.open('post', 'http://127.0.0.1:3000/api/folder', true)
+            req.open('post', window.location.origin +'/api/folder', true)
             req.setRequestHeader("Content-type", "application/json");
             let data = JSON.stringify(folder);
             req.onload = function () {
@@ -447,7 +447,7 @@
 
         function renderfolder() {
             let req = new XMLHttpRequest();
-            req.open("get", "http://127.0.0.1:3000/api/getfolder", true)
+            req.open("get", window.location.origin +"/api/getfolder", true)
             req.onload = function () {
                 let addsection = document.querySelector('.add_folder')
                 let emptyinput = document.querySelector(".tobefilled")
@@ -1046,7 +1046,7 @@
 
     <nav>
         <div class="nav">
-            <a class="index" href="http://127.0.0.1:3000/">
+            <a class="index" href=window.location.origin +"/">
                 <div class="nav_div_h1">Read it later</div>
             </a>
 

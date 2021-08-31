@@ -9,7 +9,7 @@
     <script>
         function getData() {
             var req = new XMLHttpRequest();
-            req.open('get', 'http://127.0.0.1:3000/api/getcontent')
+            req.open('get', window.location.origin +'/api/getcontent')
             req.onload = function () {
                 // 分析JSON資料
                 var content_data = JSON.parse(req.responseText);
@@ -135,7 +135,7 @@
 
     <nav class="navforRIL">
         <div class="nav1">
-            <a class="index" href="http://127.0.0.1:3000/">
+            <a class="index" href=window.location.origin +"/">
                 <div class="nav_div_h1">Read it later</div>
             </a>
 

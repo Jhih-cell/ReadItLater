@@ -183,7 +183,7 @@ def user_post():
 # 登入
 
 
-@app.route("/api/user", methods=['PATCH'])
+@app.route("/api/user/login", methods=['POST'])
 def user_patch():
     try:
         data = request.get_data()
