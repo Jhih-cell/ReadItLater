@@ -2,6 +2,13 @@
 **Save it, read it later!**<br>
 [Click me to the online website](http://3.140.25.231/)<br><br>
 
+**Information for test ↓** <br>
+account: maru@mail.com<br>
+password: lulu<br>
+(you can also sign up on your own)<br>
+article: https://okapi.books.com.tw/article/13521?loc=rank_006<br>
+(you can also add other articles you're interested in)<br>
+
 
 **Main feature**<br>
 1. Save online artiles with Python BeautifulSoup<br>
