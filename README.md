@@ -1,6 +1,6 @@
 # Read It Later
 **Save it, read it later!**<br>
-[Click me to the online website](http://3.140.25.231/)<br><br>
+online website deployed on EC2: [http://www.readitlater.live/](http://www.readitlater.live/)<br><br>
 
 **Information for test ↓** <br>
 account: maru@mail.com<br>
