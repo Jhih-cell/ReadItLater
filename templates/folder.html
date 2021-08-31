@@ -288,7 +288,7 @@
                 password: password
             }
             var req = new XMLHttpRequest();
-            req.open("patch", window.location.origin +"/api/user", true)
+            req.open("post", window.location.origin +"/api/user/login", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             let data = JSON.stringify(account); //將物件資料轉成字串
 
