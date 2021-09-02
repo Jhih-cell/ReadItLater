@@ -58,10 +58,11 @@
 
 
                         let item = `
-                    <div class="pictitle" class="${url}">
+                    <div class="pictitle" id="outer${url}">
                     <div class="set">
                     <div class="dset"><span class="pictitle2"><a id=${url} onclick="sendUrl(this.id);">${content_data.data[i][0].title}</a></span></div>
                     <div class="dset"><span class="pictitle3">${textNode2}</span><span class="pictitle4"></span></div>
+                    
                     </div>
                     <div class="pictitle1"><img class="img-width" src="${imgSrc}"></div>
                     <span class="utils" >
@@ -585,16 +586,20 @@
                 foldername: foldername,
                 url: url,
             }
-            console.log(data)
+            
             let req = new XMLHttpRequest();
             req.open('post', window.location.origin +'/api/addlinkbyfolder', true)
             req.setRequestHeader("Content-type", "application/json");
             data = JSON.stringify(data);
             req.onload = function () {
                 if (req.status == 200) {
-                    let select_folder = document.getElementById("s" + url)
-                    select_folder.setAttribute('style', 'display:none')
-                    console.log('already added article by folder')
+                    // let select_folder = document.getElementById("s" + url)
+                    // select_folder.setAttribute('style', 'display:none')
+                    alert('successfully moved to '+foldername)
+                    let delete_content = document.getElementById("outer" + url)
+                    delete_content.setAttribute('style', 'display:none')
+
+                    
                 } else {
                     console.log('not been added article by folder')
                 }
@@ -828,6 +833,10 @@
     .pictitle2 {
         font-size: 1.2rem;
         font-weight: 500;
+    }
+    .pictitle2 :hover {
+        font-weight: bolder;
+        color: #0085C9;
     }
 
     .pictitle3 {

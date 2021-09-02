@@ -34,7 +34,6 @@ print(RDSconn.ping(reconnect=True))
 #MySQL
 host=os.getenv("host")
 password=os.getenv("password")
-partner_key=os.getenv("partner_key")
 
 
 
@@ -288,7 +287,7 @@ def renderlink():
         RDSconn.ping()
         with RDSconn.cursor() as cursor:
             # 新增資料指令
-            command = "SELECT * FROM website.url  WHERE user_ID = %s ;"
+            command = "SELECT * FROM website.url  WHERE user_ID = %s and foldername is null;"
             # 執行指令
             cursor.execute(command, (user_ID,))
             # 取得所有資料
@@ -495,6 +494,15 @@ def addlinkbyfolder():
         with RDSconn.cursor() as cursor:
                 cursor.execute("INSERT INTO folder (foldername,user_ID,url) VALUES (%s,%s,%s)",(foldername,user_ID,url))
                 RDSconn.commit()
+        RDSconn.ping()
+        with RDSconn.cursor() as cursor:
+                # 修改資料SQL語法
+                command ="UPDATE url SET foldername = %s WHERE url = %s;"
+                # 執行指令
+                cursor.execute(command, (foldername,url))      
+                #儲存變更
+                RDSconn.commit()
+               
         
                 successmessage={
                     "ok":True
