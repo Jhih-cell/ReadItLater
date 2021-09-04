@@ -13,12 +13,12 @@ article: https://okapi.books.com.tw/article/13521?loc=rank_006<br>
 **Main feature**<br>
 1. Save online artiles with Python BeautifulSoup<br>
 2. Perform 'Read in Reader Mode' with Python open source tool - readability<br>
-![image](https://j.gifs.com/NOY59p.gif)<br>
+![image](https://github.com/Jhih-cell/ReadItLater/blob/main/readmode.gif)<br>
 **other functions**<br>
 'Like' the article what you are interested in<br>
-![image](https://github.com/Jhih-cell/ReadItLater/blob/main/liked.gif)<br>
+![image](https://github.com/Jhih-cell/ReadItLater/blob/main/like.gif)<br>
 Create your own folder to classify articles
-![image](https://github.com/Jhih-cell/ReadItLater/blob/main/folders.gif)<br>
+![image](https://github.com/Jhih-cell/ReadItLater/blob/main/classify.gif)<br>
 
 
 **Skills used:**<br>
