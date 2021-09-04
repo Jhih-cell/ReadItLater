@@ -518,10 +518,9 @@
                     let foldertextNode = content_data.data[i][0].foldername;
 
                     let item =
-                        `<a href="/folder/${foldertextNode}">
-                            <img class="resulticon" src="{{ url_for('static', filename='images/icons8-opened-folder-50.png') }}" alt=""><input value="${foldertextNode}" onchange="addFolder(this.value);" id="folder_inline_add_field" type="text" class="folder_inline_add_field"
-                name="folder[title]" placeholder="Add Folder" maxlength="200" aria-label="Add Folder">
-                    </input>
+                    `<a href="/folder/${foldertextNode}">
+                            <img class="resulticon" src="{{ url_for('static', filename='images/icons8-opened-folder-50.png') }}" alt="">
+                            <span id="folder_inline_add_field" class="folder_inline_add_field" name="folder[title]">${foldertextNode}</span>
                     </a>`
 
                     addsection.insertAdjacentHTML('afterend', item);
@@ -1133,7 +1132,7 @@
 
     .side-menu a {
         display: block;
-        padding: 10px;
+        padding: 10px 10px 10px 35%;
         color: black;
         text-decoration: none;
         margin: 0 auto;
