@@ -491,10 +491,9 @@
                     let addsection = document.querySelector('.side-menu')
                     let item =
                         `<a href="/folder/${foldername}">
-                            <img class="resulticon" src="{{ url_for('static', filename='images/icons8-opened-folder-50.png') }}" alt=""></a><input value="${foldername}" onchange="addFolder(this.value);" id="folder_inline_add_field" type="text" class="folder_inline_add_field"
-                name="folder[title]" placeholder="Add Folder" maxlength="200" aria-label="Add Folder">
-                    </input>
-                    `
+                            <img class="resulticon" src="{{ url_for('static', filename='images/icons8-opened-folder-50.png') }}" alt="">
+                            <span id="folder_inline_add_field" class="folder_inline_add_field" name="folder[title]">${foldername}</span>
+                        </a>`
                     emptyinput.value = ""
                     addsection.insertAdjacentHTML('beforeend', item);
                 } else {
