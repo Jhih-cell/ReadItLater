@@ -1,6 +1,7 @@
-# Read It Later
+#  Read It Later <br>
 **Save it, read it later!**<br>
-online website deployed on EC2: [https://readitlater.live/](https://readitlater.live/)<br><br>
+
+online website deployed on EC2: [https://readitlater.live/](https://readitlater.live/)<br>
 
 **Information for test ↓** <br>
 account: maru@mail.com<br>
@@ -10,7 +11,7 @@ article: https://okapi.books.com.tw/article/13521?loc=rank_006<br>
 (you can also add other articles you're interested in)<br>
 
 
-**Main feature**<br>
+### **Main feature**<br>
 1. Save online artiles with Python BeautifulSoup<br>
 2. Perform 'Read in Reader Mode' with Python open source tool - readability<br>
 ![image](https://github.com/Jhih-cell/ReadItLater/blob/main/read.gif)<br>
@@ -21,7 +22,7 @@ Create your own folder to classify articles
 ![image](https://github.com/Jhih-cell/ReadItLater/blob/main/classify.gif)<br>
 
 
-**Skills used:**<br>
+### **Skills used:**<br>
 **Flask, AWS RDS**　Integrate member account functions, article saving function, archiving function.<br>
 **Database design（AWS RDS, engine: MySQL）**<br>　
 `*`Perform normalization from 1NF to 3NF<br>　
@@ -34,5 +35,8 @@ Create your own folder to classify articles
 **Python jieba**　Splits words in order to search for keywords quicker.<br>
 **HTML, CSS, JavaScript, RWD**　Complete user interface.<br>
 
-**Database structure**<br>
+### **System architecture**<br>
+![image](https://github.com/Jhih-cell/ReadItLater/blob/main/static/images/systemArchitecture.JPG)<br>
+
+### **Database structure**<br>
 ![image](https://github.com/Jhih-cell/ReadItLater/blob/main/db.png)
