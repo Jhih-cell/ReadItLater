@@ -1,6 +1,6 @@
 # Read It Later
 **Save it, read it later!**<br>
-online website deployed on EC2: [http://www.readitlater.live/](http://www.readitlater.live/)<br><br>
+online website deployed on EC2: [https://readitlater.live/](https://readitlater.live/)<br><br>
 
 **Information for test ↓** <br>
 account: maru@mail.com<br>
