@@ -14,10 +14,8 @@
 
         //抓第一頁
         function getData() {
-
-
             var req = new XMLHttpRequest();
-            req.open("get", window.location.origin +"/api/addlink")
+            req.open("get", window.location.origin + "/api/addlink")
 
             req.onload = function () {
 
@@ -25,7 +23,10 @@
                     let main = document.querySelector('.main')
                     // 分析JSON資料
                     var content_data = JSON.parse(req.responseText);
-                    console.log(JSON.parse(req.response).data.length)
+                    if ((JSON.parse(req.response).data.length) == 0) {
+                        document.getElementById('popup3').classList.remove("overlay");
+                        document.getElementById('popup3').classList.add("overlay_target")
+                    }
                     total = JSON.parse(req.response).data.length - 1
                     for (var i = total; i >= 0; i--) {
 
@@ -146,7 +147,7 @@
 
             console.log(x);
             let req = new XMLHttpRequest();
-            req.open("get", window.location.origin +"/api/findoption?srckey=" + x, true)
+            req.open("get", window.location.origin + "/api/findoption?srckey=" + x, true)
             req.onload = function () {
                 let optiondata = req.responseText
                 if (req.status == 200) {
@@ -189,7 +190,7 @@
                 ID: id
             }
             var req = new XMLHttpRequest();
-            req.open("post", window.location.origin +"/api/addlinkdel", true)
+            req.open("post", window.location.origin + "/api/addlinkdel", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(articleid); //將物件資料轉成字串
 
@@ -235,7 +236,7 @@
             console.log(JSON.stringify(articleid))
 
             let req = new XMLHttpRequest();
-            req.open("post", window.location.origin +"/api/likedstat", true)
+            req.open("post", window.location.origin + "/api/likedstat", true)
             req.setRequestHeader("Cotnet-type", "application/json");
             let data = JSON.stringify(articleid);
 
@@ -290,7 +291,7 @@
                 password: password
             }
             var req = new XMLHttpRequest();
-            req.open("post", window.location.origin +"/api/user", true)
+            req.open("post", window.location.origin + "/api/user", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(account); //將物件資料轉成字串
             let namemsg = document.getElementById('namemsg')
@@ -366,7 +367,7 @@
         }
         function get() {
             var req = new XMLHttpRequest();
-            req.open("get", window.location.origin +"/api/user", true)
+            req.open("get", window.location.origin + "/api/user", true)
             req.onload = function () {
 
                 if (req.status == 200) {
@@ -386,7 +387,7 @@
 
         function logout() {
             var req = new XMLHttpRequest();
-            req.open("delete", window.location.origin +"/api/user", true)
+            req.open("delete", window.location.origin + "/api/user", true)
             req.onload = function () {
                 if (req.status = 200) {
                     console.log('已登出')
@@ -410,7 +411,7 @@
         //add an article
         function popup3() {
             var req = new XMLHttpRequest();
-            req.open("get", window.location.origin +"/api/user", true)
+            req.open("get", window.location.origin + "/api/user", true)
             req.onload = function () {
 
                 if (req.status == 200) {
@@ -436,7 +437,7 @@
                 url: urlhref,
             }
             var req = new XMLHttpRequest();
-            req.open("post", window.location.origin +"/api/addlink", true)
+            req.open("post", window.location.origin + "/api/addlink", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(link); //將物件資料轉成字串
 
@@ -461,7 +462,7 @@
                 url: url,
             }
             var req = new XMLHttpRequest();
-            req.open("post", window.location.origin +"/api/getcontent", true)
+            req.open("post", window.location.origin + "/api/getcontent", true)
             req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
             var data = JSON.stringify(link); //將物件資料轉成字串
 
@@ -482,7 +483,7 @@
             }
             let emptyinput = document.querySelector(".tobefilled")
             let req = new XMLHttpRequest();
-            req.open('post', window.location.origin +'/api/folder', true)
+            req.open('post', window.location.origin + '/api/folder', true)
             req.setRequestHeader("Content-type", "application/json");
             let data = JSON.stringify(folder);
             req.onload = function () {
@@ -504,7 +505,7 @@
         }
         function renderfolder() {
             let req = new XMLHttpRequest();
-            req.open("get", window.location.origin +"/api/getfolder", true)
+            req.open("get", window.location.origin + "/api/getfolder", true)
             req.onload = function () {
                 let addsection = document.querySelector('.add_folder')
                 let emptyinput = document.querySelector(".tobefilled")
@@ -518,7 +519,7 @@
                     let foldertextNode = content_data.data[i][0].foldername;
 
                     let item =
-                    `<a href="/folder/${foldertextNode}">
+                        `<a href="/folder/${foldertextNode}">
                             <img class="resulticon" src="{{ url_for('static', filename='images/icons8-opened-folder-50.png') }}" alt="">
                             <span id="folder_inline_add_field" class="folder_inline_add_field" name="folder[title]">${foldertextNode}</span>
                     </a>`
@@ -547,7 +548,7 @@
 
                 //try to render folder here
                 let req = new XMLHttpRequest();
-                req.open("get", window.location.origin +"/api/getfolder", true)
+                req.open("get", window.location.origin + "/api/getfolder", true)
                 req.onload = function () {
 
                     // 分析JSON資料
@@ -584,20 +585,20 @@
                 foldername: foldername,
                 url: url,
             }
-            
+
             let req = new XMLHttpRequest();
-            req.open('post', window.location.origin +'/api/addlinkbyfolder', true)
+            req.open('post', window.location.origin + '/api/addlinkbyfolder', true)
             req.setRequestHeader("Content-type", "application/json");
             data = JSON.stringify(data);
             req.onload = function () {
                 if (req.status == 200) {
                     // let select_folder = document.getElementById("s" + url)
                     // select_folder.setAttribute('style', 'display:none')
-                    alert('successfully moved to '+foldername)
+                    alert('successfully moved to ' + foldername)
                     let delete_content = document.getElementById("outer" + url)
                     delete_content.setAttribute('style', 'display:none')
 
-                    
+
                 } else {
                     console.log('not been added article by folder')
                 }
@@ -832,6 +833,7 @@
         font-size: 1.2rem;
         font-weight: 500;
     }
+
     .pictitle2 :hover {
         font-weight: bolder;
         color: #0085C9;
@@ -1033,7 +1035,7 @@
     }
 
     .form input {
-        
+
         height: 35px;
         background: #FFFFFF;
         border: 1px solid #CCCCCC;
@@ -1090,7 +1092,7 @@
     }
 
     .form h3 {
-        
+
         height: 27px;
         font-family: Noto Sans TC;
         font-style: normal;
@@ -1288,7 +1290,7 @@
             <div>
                 <div style="margin: 20px;">
 
-                    <input class="searchsec" type="text" placeholder="Search Article" id="Str" list="options1"
+                    <input class="searchsec" type="text" placeholder="Search title" id="Str" list="options1"
                         onchange="render_option(this.value);">
                     <img class="icon" src="{{ url_for('static', filename='images/search.png') }}" alt="">
                     <div class="option_div">
