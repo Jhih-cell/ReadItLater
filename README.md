@@ -28,6 +28,7 @@ Create your own folder to classify articles
 `*`Improve query performance by adding a compound index on keywords<br>
 **AWS cloud service**　Deploys the website online with EC2.<br>
 **NGINX** Reverse proxy server to enhance security.<br>
+**Cloudflare**　Add SSL certificate to the website<br>
 **Python flask_hashing**　hashes password to enhance security<br>
 **Python Beautiful Soup, Readability**　Analyze HTML DOM content of articles online.<br>
 **Python jieba**　Splits words in order to search for keywords quicker.<br>
