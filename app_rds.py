@@ -609,8 +609,5 @@ def renderselected():
             }
             return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
 
-@app.route("/0920")
-def home():
-    return render_template("home.html")
 
 app.run(host="0.0.0.0",port=3000)
