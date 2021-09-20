@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1 ,maximum-scale=1">
+    <link rel="Shortcut Icon" type="image/x-icon" href="{{ url_for('static', filename='images/ricon16.ico') }}" />
+
+    <title>ReadItLater</title>
+    <!-- js可供更改的部分 -->
+    {% block script %}{% endblock %}
+    
+</head>
+<style>
+    @import url(https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300&display=swap);
+    @import url(https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap);
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap');
+
+    * {
+        margin: 0;
+    }
+    .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        flex: 1 0 auto;
+
+    }
+
+    nav {
+        height: 54px;
+        position: fixed;
+        left: 0;
+        text-align: center;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        z-index: 11;
+
+        background: #CED4E3;
+
+    }
+
+    .nav {
+        width: 1200px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: auto;
+    }
+
+    .nav_div_h1 {
+        padding: 8px 36px;
+        font-family: 'Playfair Display', serif;
+        ;
+        font-style: normal;
+        font-size: 25px;
+        line-height: 34px;
+        color: #222;
+
+    }
+
+    .frame1 {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .bt1 {
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: bolder;
+        font-size: 10px;
+        line-height: 13px;
+        color: #666666;
+        margin: 10px 0px;
+        padding: 10px;
+        cursor: pointer;
+    }
+
+    .bt1:hover {
+        font-weight: bolder;
+        color: #0085C9;
+    }
+
+    .bt2 {
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: bolder;
+        font-size: 10px;
+        line-height: 13px;
+        color: #666666;
+        margin: 10px 0px;
+        padding: 10px;
+    }
+
+    .bt2:hover {
+        font-weight: bolder;
+        color: #0085C9;
+    }
+
+
+
+    .slo {
+        display: flex;
+        flex-direction: column;
+        width: 35%;
+        padding-top: 85px;
+    }
+
+
+
+    .slo1 {
+        height: 22px;
+
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 16px;
+        line-height: 13px;
+
+        color: #F8F8F8;
+    }
+
+    .slo2 {
+
+        height: 41px;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 28px;
+        line-height: 24px;
+        color: #F8F8F8;
+
+        text-shadow: 0px 0px 30px #AABBCC;
+    }
+
+
+    .searchsec {
+        line-height: 30px;
+        border: 1px solid #72777D;
+        background-color: white;
+        border-radius: 4px;
+        box-shadow: inset 0 0 5px 0 rgb(0 0 0 / 10%);
+    }
+
+
+    .icon {
+        width: 20px;
+        margin-bottom: -7px;
+    }
+
+    .resulticon {
+        width: 20px;
+        margin-bottom: -7px;
+        opacity: 0.5;
+    }
+
+
+    .welcomepic {
+        width: 650px;
+
+    }
+
+    .attr {
+        display: flex;
+        padding-top: 80px;
+        padding-bottom: 100px;
+        margin: auto;
+        justify-content: center
+    }
+
+    .attrgroup {
+        width: 1170px;
+
+
+    }
+
+    .content {
+        margin-left: auto;
+        margin-right: auto;
+        display: flex;
+        justify-content: space-around;
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .main {
+        width: 1170px;
+    }
+
+
+    .img-width {
+
+        display: block;
+        width: 150px;
+        /* height: 120px; */
+        object-fit: fill;
+        opacity: 0.8;
+    }
+
+
+    .pictitle {
+
+        display: flex;
+        background: #FFFFFF;
+        border-bottom: 2px solid #E8E8E8;
+        border-radius: 5px;
+        margin-bottom: 20px;
+    }
+
+    .pictitle1 {
+        width: 15%;
+        margin-bottom: 30px;
+    }
+
+    a {
+        text-decoration: none;
+        outline: none;
+        cursor: pointer;
+
+
+    }
+
+    a:visited {
+        color: #222
+    }
+
+    .pictitle2 {
+        font-size: 1.2rem;
+        font-weight: 500;
+    }
+
+    .pictitle2 :hover {
+        font-weight: bolder;
+        color: #0085C9;
+    }
+
+    .pictitle3 {
+        padding-top: 1rem;
+        font-size: 1rem;
+        color: #404040
+    }
+
+    .utils {
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        margin-bottom: 3rem;
+        padding: 0 25px;
+
+
+    }
+
+    .utils img {
+        margin-bottom: 10px;
+        opacity: 0.2;
+        width: 20px;
+    }
+
+    .utils img:hover {
+        margin-bottom: 10px;
+        opacity: 1;
+
+    }
+
+
+    .drawing1 {
+
+        height: 10px;
+        /* margin-left: 10px; */
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 16px;
+        line-height: 20px;
+        padding-top: 7%;
+        display: flex;
+        align-items: center;
+        color: #757575;
+    }
+
+    .drawing2 {
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 16px;
+        line-height: 25px;
+        color: #757575;
+    }
+
+    .drawing3 {
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 16px;
+        line-height: 25px;
+        color: #757575;
+
+    }
+
+
+    .dset {
+        padding-top: 5px;
+        padding-right: 3%;
+        padding-left: 3%;
+        background-color: #fff;
+        display: flex;
+        justify-content: space-between;
+        z-index: 3;
+
+    }
+
+    .set {
+        display: flex;
+        flex-direction: column;
+        width: 60%;
+        height: 250px;
+    }
+
+    .footer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        /* padding: 40px 0; */
+        /* height: 104px; */
+        background: #757575;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 16px;
+        line-height: 13px;
+        color: #FFFFFF;
+        height: 0px;
+        line-height: 104px;
+    }
+
+    .copyright {
+
+        width: 234px;
+        height: 14px;
+
+
+        /* Body - Bold 16(13.3) */
+
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 16px;
+        line-height: 13px;
+        /* identical to box height, or 83% */
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* White */
+
+        color: #FFFFFF;
+    }
+
+    .overlay {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.5);
+        transition: opacity 200ms;
+        visibility: hidden;
+        opacity: 0;
+
+
+    }
+
+    .overlay_target {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.5);
+        transition: opacity 200ms;
+        visibility: visible;
+        opacity: 1;
+        z-index: 11;
+    }
+
+    .popup {
+        margin: 75px auto;
+        padding: 20px;
+        background: #fff;
+        border: 1px solid #666;
+        border-radius: 5px;
+        width: 45%;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        position: relative;
+
+    }
+
+    .popup_link {
+        margin: 75px auto;
+        padding: 20px;
+        background: #fff;
+        border: 1px solid #666;
+        border-radius: 5px;
+        width: 70%;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        position: relative;
+
+    }
+
+    /* .key{
+
+    } */
+
+
+
+    .close {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: 20px;
+        right: 20px;
+        opacity: 0.8;
+        transition: all 200ms;
+        font-size: 24px;
+        font-weight: bold;
+        text-decoration: none;
+        color: #666;
+        cursor: pointer;
+
+    }
+
+    .form input {
+
+        height: 35px;
+        background: #FFFFFF;
+        border: 1px solid #CCCCCC;
+        border-radius: 5px;
+        margin: 5px auto;
+
+    }
+
+    button,
+    .button {
+        cursor: pointer;
+
+    }
+
+    .form button {
+        height: 35px;
+        background: #222;
+        border-radius: 5px;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 19px;
+        line-height: 16px;
+        color: #FFFFFF;
+        border-style: none;
+        margin-bottom: 5px;
+    }
+
+    #submit-button {
+        width: 110px;
+        height: 35px;
+
+        border-radius: 5px;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 19px;
+        line-height: 16px;
+        color: #080808;
+        border-style: none;
+        margin-bottom: 5px;
+
+    }
+
+    .form p {
+        height: 22px;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 16px;
+        line-height: 13px;
+        text-align: right;
+        color: #666666;
+    }
+
+    .form h3 {
+
+        height: 27px;
+        font-family: Noto Sans TC;
+        font-style: normal;
+        font-weight: bold;
+        font-size: 20px;
+        line-height: 24px;
+        text-align: left;
+        margin-bottom: 7px;
+    }
+
+    form h3 {
+
+        font-family: 'Roboto';
+    }
+
+    .form .top {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 340px;
+        height: 10px;
+
+        background: linear-gradient(270deg, #337788 0%, #66AABB 100%);
+    }
+
+    .side-menu {
+        padding-top: 62px;
+        width: 300px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+
+    }
+
+    .side-menu .home {
+        font-weight: bolder;
+        color: #0085C9;
+    }
+    .side-menu .liked {
+        font-weight: bolder;
+        color: #0085C9;
+    }
+
+    .side-menu a {
+        display: block;
+        padding: 10px 10px 10px 35%;
+        color: black;
+        text-decoration: none;
+        margin: 0 auto;
+        font-family: 'Roboto';
+    }
+
+    .side-menu a:hover {
+        font-weight: bolder;
+        color: #0085C9;
+    }
+
+
+
+    .tobeliked {
+        width: 25px;
+        opacity: 0.55;
+    }
+
+    .hr.hr-folder-divider {
+
+        margin: 12px auto;
+        width: 110px;
+        border-color: #ececec;
+        display: block;
+        height: 1px;
+        border-top: 1px solid #dfdfdf;
+    }
+
+    .folder_inline_add_field {
+        transition: opacity 400ms cubic-bezier(.25, .46, .45, .94), border 400ms cubic-bezier(.25, .46, .45, .94);
+        cursor: pointer;
+        border: 1px solid transparent;
+        font-size: 13px;
+        font-size: .8125rem;
+
+        padding: 0.25rem;
+        opacity: .7;
+        color: #000;
+    }
+
+    .add_folder {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .add_folder span {
+        padding: 0 10px 0 50px;
+    }
+
+    .addicon {
+        display: flex;
+        flex-direction: row;
+    }
+
+    input::-webkit-calendar-picker-indicator {
+        opacity: 0;
+    }
+
+    .option_div {
+        position: fixed;
+        z-index: 10;
+
+    }
+
+    .option_ul {
+        padding: 0;
+        list-style-type: none;
+
+        width: 50%;
+        background-color: white;
+        border: 1px solid #ccc;
+        z-index: 10;
+
+        border-radius: 4px;
+        box-shadow: 0 6px 12px rgb(0 0 0 / 18%);
+    }
+
+    .option_ul li {
+        text-align: left;
+        min-width: 80%;
+        padding: 10px 16px;
+    }
+
+    .welcomescene {
+        display: flex;
+        flex-direction: column;
+        margin: 0 auto;
+    }
+
+    .welcomescene img {
+        width: 350px;
+    }
+
+    .welcomebtn {
+        height: 50px;
+        margin-top: 20px;
+        border-color: #0085C9;
+        color: #0085C9;
+        background-color: transparent;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>
+
+<body onload="getData();">
+
+
+    <nav>
+        <div class="nav">
+            <a class="index" href="/">
+                <div class="nav_div_h1">Read it later</div>
+            </a>
+
+            <div class="frame1">
+                <div class="bt1" onclick="popup3();">+ Article Link</div>
+                <a id="bt2" class="button">
+                    <div class="bt2" onclick="popup();">login/register</div>
+                </a>
+            </div>
+        </div>
+        </div>
+
+    </nav>
+
+
+
+
+
+    <div class="attr">
+        <div class="side-menu">
+
+            {% block a %}{% endblock %}
+            <div class="hr hr-folder-divider"></div>
+            <div class="add_folder">
+                <div class="addicon">
+                    <span><img class="icon" src="{{ url_for('static', filename='images/add.png') }}" alt=""></span>
+                    <input onchange="addFolder(this.value);" id="folder_inline_add_field" type="text"
+                        class="folder_inline_add_field tobefilled" name="folder[title]" placeholder="Add Folder"
+                        maxlength="200" aria-label="Add Folder">
+                </div>
+            </div>
+
+        </div>
+
+
+
+        <div class="main infiniteWrap">
+            {% block div %}{% endblock %}
+
+        </div>
+    </div>
+
+    <footer class="footer bottom">COPYRIGHT © Read it later</div>
+    </footer>
+    <!-- popup -->
+    <div id="popup1" class="overlay">
+
+        <div class="popup">
+
+            <a class="close" onclick="endpopup();">&times;</a>
+            <div class="content">
+                <form class="form" action="/api/user" method="GET">
+
+                    <h3>登入會員帳號</h3>
+                    <table>
+                        <tr>
+                            <td id="mailsec">
+                                <input id="loginemail" type="text" name="email" action="/api/user" method="POST"
+                                    placeholder="輸入電子信箱" />
+
+                                <p id="mailmsg" style="display: none;">請輸入帳號</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td id="passwordsec">
+                                <input id="loginpassword" type="password" name="password" action="/api/user"
+                                    method="POST" placeholder="輸入密碼" />
+
+                                <p id="passwordmsg" style="display: none;">請輸入密碼</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right;"><button onclick="login();return false;">登入</button></td>
+                        </tr>
+                        <tr>
+                            <td class="query0">
+                                <p onclick="popup2();" style="cursor: pointer;">還沒有帳戶？點此註冊</p>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="popup2" class="overlay">
+
+        <div class="popup">
+
+            <a class="close" onclick="endpopup2();">&times;</a>
+            <div class="content">
+                <form class="form">
+
+                    <h3>註冊會員帳號</h3>
+                    <table>
+                        <tr>
+                            <td><input id="name" type="text" name="name" placeholder="輸入姓名" /></td>
+                            <p id="namemsg" style="display: none;">請輸入姓名</p>
+                        </tr>
+                        <tr>
+                            <td><input id="email" name="email" placeholder="輸入電子郵件" /></td>
+                            <p id="mailbuildmsg" style="display: none;">請輸入email</p>
+                        </tr>
+                        <tr>
+                            <td><input id="password" type="password" name="password" placeholder="輸入密碼" /></td>
+                            <p id="passwordbuildmsg" style="display: none;">請輸入密碼</p>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right;"><button onclick="register();return false;">註冊新帳戶</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="query">
+                                <p onclick="backloginpop();" style="cursor: pointer;">已經有帳戶了？點此登入</p>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="popup3" class="overlay">
+
+        <div class="popup_link">
+            <a class="close" onclick="endpopup3();">&times;</a>
+            <div class="content">
+                <div class="form">
+                    <h3>add an article</h3>
+                    <hr>
+                    <table>
+                        <tr>
+                            <td><input id="addlink" type="text" placeholder="www.example.com/" /></td>
+                        </tr>
+
+                        <tr>
+                            <td><button onclick="addlink();return false;">Add</button></td>
+                        </tr>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

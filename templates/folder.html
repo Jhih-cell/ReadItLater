@@ -1,1155 +1,438 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1 ,maximum-scale=1">
-    <link rel="Shortcut Icon" type="image/x-icon" href="{{ url_for('static', filename='images/ricon16.ico') }}" />
-    <title>ReadItLater</title>
-
-
-    <script type="text/javascript">
-
-        //抓第一頁
-        function getData() {
-            let getUrlString = location.href;
-            let url = new URL(getUrlString);
-            let param = url.pathname.replace("/folder/", "")
-            let req = new XMLHttpRequest();
-            req.open("get", window.location.origin +"/api/addlinkbyfolder/" + param)
-
-            req.onload = function () {
-                let main = document.querySelector('.main')
-                // 分析JSON資料
-                var content_data = JSON.parse(req.responseText);
-                let defaulttext = document.querySelector('.default')
-                let total = JSON.parse(req.response).data.length - 1
-                if (total + 1 > 0) {
-                    defaulttext.innerHTML = ""
-                }
-
-
-                for (var i = total; i >= 0; i--) {
-
-                    //first image 
-                    let content_img = document.createElement('img');
-                    content_img.classList.add('img-width');
-                    let imgSrc = content_data.data[i][0].pic;
-                    content_img.setAttribute("src", imgSrc);
-                    // link.appendChild(content_img);
-                    // document.querySelectorAll('.pictitle1')[i].appendChild(content_img);
-                    //url
-                    let url = content_data.data[i][0].url;
-
-                    //文章名稱
-                    let textNode = content_data.data[i][0].title;
-
-                    //文章摘要
-                    let textNode2 = content_data.data[i][0].des;
-
-                    //ID
-                    let textNode3 = content_data.data[i][0].id;
-
-                    //liked
-                    let liked = content_data.data[i][0].liked;
-
-                    let heart_imgsrc = imgSrc1
-                    if (liked == 'N' || liked === null) {
-                        heart_imgsrc = imgSrc2
-                    }
-
-                    let item = `
-                    <div class="pictitle">
-                    <div class="set">
-                    <div class="dset"><span class="pictitle2"><a id=${url} onclick="sendUrl(this.id);">${content_data.data[i][0].title}</a></span></div>
-                    <div class="dset"><span class="pictitle3">${textNode2}</span><span class="pictitle4"></span></div>
-                    </div>
-                    <div class="pictitle1"><img class="img-width" src="${imgSrc}"></div>
-                    <span class="utils" >
-                        <img class="tobeliked"
-                        src="${heart_imgsrc}" onclick="sendlike_stat(${textNode3});" id="${textNode3}like" alt="" >
-                        <img style="width:25px"
-                        src="{{ url_for('static', filename='images/icon_delete.png') }}" alt="" onclick="cancel(this.id);" id="${textNode3}">
-                    
-                    <input style="display:none" class="articleID" ></input></span>
-                    </div>
-                    `
-
-
-                    main.insertAdjacentHTML('beforeend', item);
-
-                }
-
-
-                //genre
-                // for (var i = 0; i < 12; i++) {
-                //     let Title = document.createElement('div');
-                //     Title.classList.add('drawing3');
-                //     //加入文章名稱
-                //     let textNode = document.createTextNode(content_data.data[i][0].category);
-                //     Title.appendChild(textNode);
-                //     document.querySelectorAll('.pictitle4')[i].appendChild(Title)
-                // }
-
-                get();
-
-            }
-            req.send();
-        }
-        //利用 window 的 scroll 事件，搭配 HTML 元件的 getBoundingClientRect 等等方法來偵測頁面是否已經捲動到最下方。
-        var windowHeight = document.documentElement.clientHeight // 瀏覽器可視範圍
-        var count = 0;
-        let lock = false;
-        let keyword = "";
-
-        window.addEventListener('scroll', function () {
-            // 取得rect界限 top, left, right, 和 bottom
-            // 相對於瀏覽器可視範圍左上角
-            var targetRect = document.getElementsByClassName('bottom')[0].getBoundingClientRect()
-
-            //目標元素距離視窗頂部距離
-            var targetTop = targetRect.top
-            if (count <= 26) {
-                if (lock) {
-                    return
-                } else {
-                    console.log(targetTop, windowHeight);
-                    if (targetTop < windowHeight) {
-                        count++
-                        //若目標元素距離視窗頂部距離<視窗高度，呼叫 API 載入下一頁的資訊
-                        //debounce(getnextpage, 3000)
-                        console.log(count)
-                        console.log("實驗抓值" + document.getElementById('Str').value)
-                        keyword = document.getElementById('Str').value
-                        setTimeout(getnextpage, 100);
-                        lock = true;
-
-                    }
-                }
-            } else {
-                return
-            }
-
-            
-        })
-
-
-        //刪除收藏文章
-        function cancel(x) {
-            var id = x;
-            var articleid = {
-                ID: id
-            }
-            var req = new XMLHttpRequest();
-            req.open("post", window.location.origin +"/api/addlinkdel", true)
-            req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
-            var data = JSON.stringify(articleid); //將物件資料轉成字串
-
-            req.onload = function () {
-                if (req.status = 200) {
-                    console.log('已刪除')
-                    window.location.reload();
-                }
-            }
-            req.send(data);
-
-        }
-
-
-        var imgSrc1 = 'https://img.icons8.com/material-rounded/24/000000/filled-like.png'
-        var imgSrc2 = 'https://img.icons8.com/ios/50/000000/hearts--v1.png'
-        function sendlike_stat(x) {
-            let id = x
-            let likeitem = document.getElementById(x + 'like')
-            let getimgsrc = likeitem.getAttribute('src')
-            let articleid = {
-                ID: id,
-                liked: "N"
-            }
-            if (getimgsrc == imgSrc1) {
-                likeitem.removeAttribute("src", imgSrc1);
-                likeitem.setAttribute("src", imgSrc2);
-                articleid = {
-                    ID: id,
-                    liked: "N"
-                }
-            } else {
-                likeitem.removeAttribute("src", imgSrc2);
-                likeitem.setAttribute("src", imgSrc1);
-                articleid = {
-                    ID: id,
-                    liked: "Y"
-                }
-            }
-
-
-
-            console.log(JSON.stringify(articleid))
-
-            let req = new XMLHttpRequest();
-            req.open("post", window.location.origin +"/api/likedstat", true)
-            req.setRequestHeader("Cotnet-type", "application/json");
-            let data = JSON.stringify(articleid);
-
-            req.reload = function () {
-                if (req.status = 200) {
-                    console.log("已記錄like狀態")
-                    window.location.reload();
-                }
-            }
-            req.send(data);
-        }
-
-        //popup_登入
-
-        function popup() {
-            document.getElementById('popup1').classList.remove("overlay");
-            document.getElementById('popup1').classList.add("overlay_target")
-        }
-
-        function endpopup() {
-            document.getElementById('popup1').classList.remove("overlay_target");
-            document.getElementById('popup1').classList.add("overlay")
-
-        }
-        //popup_註冊
-
-        function popup2() {
-            document.getElementById('popup2').classList.remove("overlay");
-            document.getElementById('popup2').classList.add("overlay_target")
-        }
-
-        function endpopup2() {
-            document.getElementById('popup2').classList.remove("overlay_target");
-            document.getElementById('popup2').classList.add("overlay")
-            document.getElementById('popup1').classList.remove("overlay_target");
-            document.getElementById('popup1').classList.add("overlay")
-        }
-
-        function backloginpop() {
-            document.getElementById('popup2').classList.remove("overlay_target");
-            document.getElementById('popup1').classList.add("overlay_target")
-        }
-
-        //從前端POST資料到後端_註冊
-        function register() {
-            var name = document.getElementById('name').value;
-            var email = document.getElementById('email').value;
-            var password = document.getElementById('password').value;
-            var account = {
-                name: name,
-                email: email,
-                password: password
-            }
-            var req = new XMLHttpRequest();
-            req.open("post", window.location.origin +"/api/user", true)
-            req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
-            var data = JSON.stringify(account); //將物件資料轉成字串
-            let namemsg = document.getElementById('namemsg')
-            let mailbuildmsg = document.getElementById('mailbuildmsg')
-            let passwordmsg = document.getElementById('passwordbuildmsg')
-            if (name == "") {
-                mailbuildmsg.setAttribute('style', 'display:none')
-                passwordmsg.setAttribute('style', 'display:none')
-                namemsg.removeAttribute('style')
-            } else if (email == "") {
-                namemsg.setAttribute('style', 'display:none')
-                passwordmsg.setAttribute('style', 'display:none')
-                mailbuildmsg.removeAttribute('style')
-            } else if (password == "") {
-                mailbuildmsg.setAttribute('style', 'display:none')
-                namemsg.setAttribute('style', 'display:none')
-                passwordmsg.removeAttribute('style')
-            } else {
-                req.onload = function () {
-                    namemsg.setAttribute('style', 'display:none')
-                    mailbuildmsg.setAttribute('style', 'display:none')
-                    passwordmsg.setAttribute('style', 'display:none')
-
-                    if (req.status == 200) {
-                        alert('註冊成功')
-                        window.location.reload();
-                    } else if (req.status >= 400 && req.status <= 500) {
-                        document.querySelector('.query').innerHTML = '<p style="color:red;">註冊失敗</p><p onclick="backloginpop();" style="cursor: pointer;">已經有帳戶了？點此登入</p>'
-                    }
-
-                }
-                req.send(data); //送出字串
-            }
-
-        }
-
-        function login() {
-
-            var email = document.getElementById('loginemail').value;
-            var password = document.getElementById('loginpassword').value;
-            var account = {
-                email: email,
-                password: password
-            }
-            var req = new XMLHttpRequest();
-            req.open("post", window.location.origin +"/api/user/login", true)
-            req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
-            let data = JSON.stringify(account); //將物件資料轉成字串
-
-            req.onload = function () {
-
-                if (req.status == 200) {
-                    window.location.reload();
-                } else {
-                    if (email == "") {
-                        let mailmsg = document.getElementById('mailmsg')
-                        mailmsg.removeAttribute('style')
-                    } else if (password == "") {
-                        let passwordmsg = document.getElementById('passwordmsg')
-                        mailmsg.setAttribute('style', 'display:none')
-                        passwordmsg.removeAttribute('style')
-                    } else {
-                        passwordmsg.setAttribute('style', 'display:none')
-                        document.querySelector('.query0').innerHTML = '<p style="color:red">請輸入正確的帳號密碼</p><p onclick="popup2();" style="cursor:pointer;">還沒有帳戶？點此註冊</p>'
-                    }
-
-                }
-
-            }
-            req.send(data); //送出字串
-
-        }
-        function get() {
-            var req = new XMLHttpRequest();
-            req.open("get", window.location.origin +"/api/user", true)
-            req.onload = function () {
-
-                if (req.responseText == '{"data": null}') {
-                    console.log('未登入')
-
-
-                } else {
-                    console.log('已登入')
-                    var bt2 = document.getElementById('bt2');
-                    bt2.innerHTML = '<div class="bt2" onclick="logout();">log out</div>';
-                }
-
-            }
-            req.send();
-
-
-        }
-
-        function logout() {
-            var req = new XMLHttpRequest();
-            req.open("delete", window.location.origin +"/api/user", true)
-            req.onload = function () {
-                if (req.status = 200) {
-                    console.log('已登出')
-                    window.location.reload();
-                }
-            }
-            req.send();
-
-        }
-
-
-        function reservation2() {
-            let bt2txt = document.querySelector('.bt2').innerText
-            if (bt2txt == "login/register") {
-                popup();
-            } else {
-                document.location.href = "/booking";
-            }
-        }
-
-        //add an article
-        function popup3() {
-            var req = new XMLHttpRequest();
-            req.open("get", window.location.origin +"/api/user", true)
-            req.onload = function () {
-
-                if (req.status == 200) {
-                    document.getElementById('popup3').classList.remove("overlay");
-                    document.getElementById('popup3').classList.add("overlay_target")
-
-                } else {
-                    popup()
-                }
-
-            }
-            req.send();
-
-
-        }
-        function endpopup3() {
-            document.getElementById('popup3').classList.remove("overlay_target");
-            document.getElementById('popup3').classList.add("overlay")
-        }
-        function addlink() {
-            var urlhref = document.getElementById('addlink').value;
-            var link = {
-                url: urlhref,
-            }
-            var req = new XMLHttpRequest();
-            req.open("post", window.location.origin +"/api/addlink", true)
-            req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
-            var data = JSON.stringify(link); //將物件資料轉成字串
-
-            req.onload = function () {
-                if (req.status == 200) {
-                    endpopup3();
-                    alert('saved')
-                    window.location.reload();
-                } else if (req.status == 400) {
-                    alert('You have already saved it!')
-                }
-                else if (req.status > 400 && req.status <= 500) {
-                    console.log('not saved')
-                }
-
-            }
-            req.send(data); //送出字串
-        }
-
-        function sendUrl(url) {
-
-            var link = {
-                url: url,
-            }
-            var req = new XMLHttpRequest();
-            req.open("post", window.location.origin +"/api/getcontent", true)
-            req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
-            var data = JSON.stringify(link); //將物件資料轉成字串
-
-            req.onload = function () {
-                if (req.status == 200) {
-                    alert('url send')
-                    window.location.replace("/content");
-                } else if (req.status >= 400 && req.status <= 500) {
-                    console.log('url not been send')
-                }
-
-            }
-            req.send(data); //送出字串
-        }
-
-        function addFolder(foldername) {
-            alert(foldername)
-        }
-
-
-
-    </script>
-</head>
-<style>
-    @import url(https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300&display=swap);
-    @import url(https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap);
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap');
-
-    * {
-        margin: 0;
-    }
-
-
-
-    .container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        flex: 1 0 auto;
-
-    }
-
-    nav {
-        height: 54px;
-        position: fixed;
-        left: 0;
-        text-align: center;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        z-index: 11;
-
-        background: #CED4E3;
-
-    }
-
-    .nav {
-        width: 1200px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: auto;
-    }
-
-    .nav_div_h1 {
-        padding: 8px 36px;
-        font-family: 'Playfair Display', serif;
-        ;
-        font-style: normal;
-        font-size: 25px;
-        line-height: 34px;
-        color: #222;
-
-    }
-
-    .frame1 {
-        display: flex;
-        flex-direction: row;
-    }
-
-    .bt1 {
-        font-family: Noto Sans TC;
-        font-style: normal;
-        font-weight: bolder;
-        font-size: 10px;
-        line-height: 13px;
-        color: #666666;
-        margin: 10px 0px;
-        padding: 10px;
-        cursor: pointer;
-    }
-
-    .bt1:hover {
-        font-weight: bolder;
-        color: #0085C9;
-    }
-
-    .bt2 {
-        font-family: Noto Sans TC;
-        font-style: normal;
-        font-weight: bolder;
-        font-size: 10px;
-        line-height: 13px;
-        color: #666666;
-        margin: 10px 0px;
-        padding: 10px;
-    }
-
-
-
-
-    .slo {
-        display: flex;
-        flex-direction: column;
-        width: 35%;
-        padding-top: 85px;
-    }
-
-
-
-    .slo1 {
-        height: 22px;
-
-        font-family: Noto Sans TC;
-        font-style: normal;
-        font-weight: normal;
-        font-size: 16px;
-        line-height: 13px;
-
-        color: #F8F8F8;
-    }
-
-    .slo2 {
-
-        height: 41px;
-        font-family: Noto Sans TC;
-        font-style: normal;
-        font-weight: bold;
-        font-size: 28px;
-        line-height: 24px;
-        color: #F8F8F8;
-
-        text-shadow: 0px 0px 30px #AABBCC;
-    }
-
-
-    .searchsec {
-        border-color: #878787;
-        border-style: solid;
-        border-top-width: 0px;
-        border-right-width: 0px;
-        border-bottom-width: 0px;
-        border-left-width: 0px
-    }
-
-
-    .icon {
-        width: 27px;
-        margin-bottom: -7px;
-    }
-
-
-    .welcomepic {
-        width: 650px;
-
-    }
-
-    .attr {
-        display: flex;
-        padding-top: 80px;
-        padding-bottom: 100px;
-        margin: auto;
-        justify-content: center
-    }
-
-    .attrgroup {
-        width: 1170px;
-
-
-    }
-
-    .content {
-        margin-left: auto;
-        margin-right: auto;
-        display: flex;
-        justify-content: space-around;
-        align-items: flex-start;
-        flex-wrap: wrap;
-    }
-
-    .main {
-        width: 1170px;
-    }
-
-
-    .img-width {
-
-        display: block;
-        width: 150px;
-        /* height: 120px; */
-        object-fit: fill;
-        opacity: 0.8;
-    }
-
-
-    .pictitle {
-
-        display: flex;
-        background: #FFFFFF;
-        border-bottom: 2px solid #E8E8E8;
-        border-radius: 5px;
-        margin-bottom: 20px;
-    }
-
-    .pictitle1 {
-        width: 15%;
-        margin-bottom: 30px;
-    }
-
-    a {
-        text-decoration: none;
-        outline: none;
-        cursor: pointer;
-
-
-    }
-
-    a:visited {
-        color: #222
-    }
-
-    .pictitle2 {
-        font-size: 1.2rem;
-        font-weight: 500;
-    }
-
-    .pictitle3 {
-        padding-top: 1rem;
-        font-size: 1rem;
-        color: #404040
-    }
-
-    .utils {
-        display: flex;
-        flex-direction: column;
-        cursor: pointer;
-        margin-bottom: 3rem;
-        padding: 0 25px;
-
-
-    }
-
-    .utils img {
-        margin-bottom: 10px;
-        opacity: 0.2;
-    }
-
-    .utils img:hover {
-        margin-bottom: 10px;
-        opacity: 1;
-
-    }
-
-
-    .drawing1 {
-
-        height: 10px;
-        /* margin-left: 10px; */
-        font-family: Noto Sans TC;
-        font-style: normal;
-        font-weight: bold;
-        font-size: 16px;
-        line-height: 20px;
-        padding-top: 7%;
-        display: flex;
-        align-items: center;
-        color: #757575;
-    }
-
-    .drawing2 {
-        font-family: Noto Sans TC;
-        font-style: normal;
-        font-weight: normal;
-        font-size: 16px;
-        line-height: 25px;
-        color: #757575;
-    }
-
-    .drawing3 {
-        font-family: Noto Sans TC;
-        font-style: normal;
-        font-weight: normal;
-        font-size: 16px;
-        line-height: 25px;
-        color: #757575;
-
-    }
-
-
-    .dset {
-        padding-top: 5px;
-        padding-right: 3%;
-        padding-left: 3%;
-        background-color: #fff;
-        display: flex;
-        justify-content: space-between;
-        z-index: 3;
-
-    }
-
-    .set {
-        display: flex;
-        flex-direction: column;
-        width: 60%;
-        height: 250px;
-    }
-
-    .footer {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        /* padding: 40px 0; */
-        /* height: 104px; */
-        background: #757575;
-        font-family: Noto Sans TC;
-        font-style: normal;
-        font-weight: bold;
-        font-size: 16px;
-        line-height: 13px;
-        color: #FFFFFF;
-        height: 0px;
-        line-height: 104px;
-    }
-
-    .copyright {
-
-        width: 234px;
-        height: 14px;
-
-
-        /* Body - Bold 16(13.3) */
-
-        font-family: Noto Sans TC;
-        font-style: normal;
-        font-weight: bold;
-        font-size: 16px;
-        line-height: 13px;
-        /* identical to box height, or 83% */
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        /* White */
-
-        color: #FFFFFF;
-    }
-
-    .overlay {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(0, 0, 0, 0.5);
-        transition: opacity 200ms;
-        visibility: hidden;
-        opacity: 0;
-
-
-    }
-
-    .overlay_target {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(0, 0, 0, 0.5);
-        transition: opacity 200ms;
-        visibility: visible;
-        opacity: 1;
-        z-index: 11;
-    }
-
-    .popup {
-        margin: 75px auto;
-        padding: 20px;
-        background: #fff;
-        border: 1px solid #666;
-        border-radius: 5px;
-        width: 45%;
-        box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
-        position: relative;
-
-    }
-
-    .popup_link {
-        margin: 75px auto;
-        padding: 20px;
-        background: #fff;
-        border: 1px solid #666;
-        border-radius: 5px;
-        width: 70%;
-        box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
-        position: relative;
-
-    }
-
-    /* .key{
-
-    } */
-
-
-
-    .close {
-        position: absolute;
-        width: 20px;
-        height: 20px;
-        top: 20px;
-        right: 20px;
-        opacity: 0.8;
-        transition: all 200ms;
-        font-size: 24px;
-        font-weight: bold;
-        text-decoration: none;
-        color: #666;
-        cursor: pointer;
-
-    }
-
-    .form input {
-        
-        height: 35px;
-        background: #FFFFFF;
-        border: 1px solid #CCCCCC;
-        border-radius: 5px;
-        margin: 5px auto;
-
-    }
-
-    button,
-    .button {
-        cursor: pointer;
-
-    }
-
-    .form button {
-        height: 35px;
-        background: #222;
-        border-radius: 5px;
-        font-family: Noto Sans TC;
-        font-style: normal;
-        font-weight: normal;
-        font-size: 19px;
-        line-height: 16px;
-        color: #FFFFFF;
-        border-style: none;
-        margin-bottom: 5px;
-    }
-
-    #submit-button {
-        width: 110px;
-        height: 35px;
-
-        border-radius: 5px;
-        font-family: Noto Sans TC;
-        font-style: normal;
-        font-weight: normal;
-        font-size: 19px;
-        line-height: 16px;
-        color: #080808;
-        border-style: none;
-        margin-bottom: 5px;
-
-    }
-
-    .form p {
-        height: 22px;
-        font-family: Noto Sans TC;
-        font-style: normal;
-        font-weight: normal;
-        font-size: 16px;
-        line-height: 13px;
-        text-align: right;
-        color: #666666;
-    }
-
-    .form h3 {
-        
-        height: 27px;
-        font-family: Noto Sans TC;
-        font-style: normal;
-        font-weight: bold;
-        font-size: 20px;
-        line-height: 24px;
-        text-align: left;
-        margin-bottom: 7px;
-    }
-
-    form h3 {
-
-        font-family: 'Roboto';
-    }
-
-    .form .top {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 340px;
-        height: 10px;
-
-        background: linear-gradient(270deg, #337788 0%, #66AABB 100%);
-    }
-
-    .side-menu {
-        width: 300px;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .side-menu .home {
-        font-weight: bolder;
-        color: #0085C9;
-    }
-
-    .side-menu a {
-        display: block;
-        padding: 10px;
-        color: black;
-        text-decoration: none;
-        margin: 0 auto;
-        font-family: 'Roboto';
-    }
-
-    .side-menu a:hover {
-        font-weight: bolder;
-        color: #0085C9;
-    }
-
-
-
-    .tobeliked {
-        width: 25px;
-        opacity: 0.55;
-    }
-
-    .hr.hr-folder-divider {
-
-        margin: 12px auto;
-        width: 110px;
-        border-color: #ececec;
-        display: block;
-        height: 1px;
-        border-top: 1px solid #dfdfdf;
-    }
-
-    .folder_inline_add_field {
-        transition: opacity 400ms cubic-bezier(.25, .46, .45, .94), border 400ms cubic-bezier(.25, .46, .45, .94);
-        cursor: pointer;
-        border: 1px solid transparent;
-        font-size: 13px;
-        font-size: .8125rem;
-        padding: 0.25rem;
-        outline: 0;
-        box-shadow: none;
-        border-radius: 3px;
-        opacity: .7;
-        color: #000;
-    }
-
-    .add_folder {
-        display: flex;
-        flex-direction: row;
-    }
-
-    .add_folder span {
-        padding: 0 10px 0 50px;
-    }
-</style>
-
-<body onload="getData();">
-
-
-    <nav>
-        <div class="nav">
-            <a class="index" href="https://readitlater.live/">
-                <div class="nav_div_h1">Read it later</div>
-            </a>
-
-            <div class="frame1">
-                <div class="bt1" onclick="popup3();">+ Article Link</div>
-                <a id="bt2" class="button">
-                    <div class="bt2" onclick="popup();">login/register</div>
-                </a>
-            </div>
-        </div>
-        </div>
-
-    </nav>
-
-
-
-
-
-    <div class="attr">
-        <div class="side-menu">
-
-            <a href="/" class="home">Home</a>
-            <a href="/liked">Liked</a>
-            <!-- <a href="#">Archived</a> -->
-            <!-- <a href="#">Video</a> -->
-            <!-- <a href="#">Notes</a>
-            <a href="#">Browse</a> -->
-            <div class="hr hr-folder-divider"></div>
-            <!-- <div class="add_folder">
-                <span><img class="icon" src="{{ url_for('static', filename='images/add.png') }}" alt=""></span>
-                <input onchange="addFolder(this.value);" id="folder_inline_add_field" type="text"
-                    class="js_folder_inline_add_field folder_inline_add_field" name="folder[title]"
-                    placeholder="Add Folder" maxlength="200" aria-label="Add Folder">
-            </div> -->
-
-        </div>
-
-
-
-        <div class="main infiniteWrap">
-            <p class="default">No articles in this folder.</p>
-
-        </div>
-    </div>
-
-    <footer class="footer bottom">COPYRIGHT © Read it later</div>
-    </footer>
-    <!-- popup -->
-    <div id="popup1" class="overlay">
-
-        <div class="popup">
-
-            <a class="close" onclick="endpopup();">&times;</a>
-            <div class="content">
-                <form class="form" action="/api/user" method="GET">
-
-                    <h3>登入會員帳號</h3>
-                    <table>
-                        <tr>
-                            <td id="mailsec">
-                                <input id="loginemail" type="text" name="email" action="/api/user" method="POST"
-                                    placeholder="輸入電子信箱" />
-
-                                <p id="mailmsg" style="display: none;">請輸入帳號</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td id="passwordsec">
-                                <input id="loginpassword" type="password" name="password" action="/api/user"
-                                    method="POST" placeholder="輸入密碼" />
-
-                                <p id="passwordmsg" style="display: none;">請輸入密碼</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="text-align: right;"><button onclick="login();return false;">登入</button></td>
-                        </tr>
-                        <tr>
-                            <td class="query0">
-                                <p onclick="popup2();" style="cursor: pointer;">還沒有帳戶？點此註冊</p>
-                            </td>
-                        </tr>
-                    </table>
-                </form>
-            </div>
-        </div>
-    </div>
-    <div id="popup2" class="overlay">
-
-        <div class="popup">
-
-            <a class="close" onclick="endpopup2();">&times;</a>
-            <div class="content">
-                <form class="form">
-
-                    <h3>註冊會員帳號</h3>
-                    <table>
-                        <tr>
-                            <td><input id="name" type="text" name="name" placeholder="輸入姓名" /></td>
-                            <p id="namemsg" style="display: none;">請輸入姓名</p>
-                        </tr>
-                        <tr>
-                            <td><input id="email" name="email" placeholder="輸入電子郵件" /></td>
-                            <p id="mailbuildmsg" style="display: none;">請輸入email</p>
-                        </tr>
-                        <tr>
-                            <td><input id="password" type="password" name="password" placeholder="輸入密碼" /></td>
-                            <p id="passwordbuildmsg" style="display: none;">請輸入密碼</p>
-                        </tr>
-                        <tr>
-                            <td style="text-align: right;"><button onclick="register();return false;">註冊新帳戶</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="query">
-                                <p onclick="backloginpop();" style="cursor: pointer;">已經有帳戶了？點此登入</p>
-                            </td>
-                        </tr>
-                    </table>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div id="popup3" class="overlay">
-
-        <div class="popup_link">
-            <a class="close" onclick="endpopup3();">&times;</a>
-            <div class="content">
-                <div class="form">
-                    <h3>add an article</h3>
-                    <hr>
-                    <table>
-                        <tr>
-                            <td><input id="addlink" type="text" placeholder="www.example.com/" /></td>
-                        </tr>
-
-                        <tr>
-                            <td><button onclick="addlink();return false;">Add</button></td>
-                        </tr>
-
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
-
-</html>
+{% extends "base.html" %}
+
+{% block script %}
+<script type="text/javascript">
+
+  //抓第一頁
+  function getData() {
+      let getUrlString = location.href;
+      let url = new URL(getUrlString);
+      let param = url.pathname.replace("/folder/", "")
+      let req = new XMLHttpRequest();
+      req.open("get", window.location.origin +"/api/addlinkbyfolder/" + param)
+
+      req.onload = function () {
+          let main = document.querySelector('.main')
+          // 分析JSON資料
+          var content_data = JSON.parse(req.responseText);
+          let defaulttext = document.querySelector('.default')
+          let total = JSON.parse(req.response).data.length - 1
+          if (total + 1 > 0) {
+              defaulttext.innerHTML = ""
+          }
+
+
+          for (var i = total; i >= 0; i--) {
+
+              //first image 
+              let content_img = document.createElement('img');
+              content_img.classList.add('img-width');
+              let imgSrc = content_data.data[i][0].pic;
+              content_img.setAttribute("src", imgSrc);
+              // link.appendChild(content_img);
+              // document.querySelectorAll('.pictitle1')[i].appendChild(content_img);
+              //url
+              let url = content_data.data[i][0].url;
+
+              //文章名稱
+              let textNode = content_data.data[i][0].title;
+
+              //文章摘要
+              let textNode2 = content_data.data[i][0].des;
+
+              //ID
+              let textNode3 = content_data.data[i][0].id;
+
+              //liked
+              let liked = content_data.data[i][0].liked;
+
+              let heart_imgsrc = imgSrc1
+              if (liked == 'N' || liked === null) {
+                  heart_imgsrc = imgSrc2
+              }
+
+              let item = `
+              <div class="pictitle">
+              <div class="set">
+              <div class="dset"><span class="pictitle2"><a id=${url} onclick="sendUrl(this.id);">${content_data.data[i][0].title}</a></span></div>
+              <div class="dset"><span class="pictitle3">${textNode2}</span><span class="pictitle4"></span></div>
+              </div>
+              <div class="pictitle1"><img class="img-width" src="${imgSrc}"></div>
+              <span class="utils" >
+                  <img class="tobeliked"
+                  src="${heart_imgsrc}" onclick="sendlike_stat(${textNode3});" id="${textNode3}like" alt="" >
+                  <img style="width:25px"
+                  src="{{ url_for('static', filename='images/icon_delete.png') }}" alt="" onclick="cancel(this.id);" id="${textNode3}">
+              
+              <input style="display:none" class="articleID" ></input></span>
+              </div>
+              `
+
+
+              main.insertAdjacentHTML('beforeend', item);
+
+          }
+
+
+          //genre
+          // for (var i = 0; i < 12; i++) {
+          //     let Title = document.createElement('div');
+          //     Title.classList.add('drawing3');
+          //     //加入文章名稱
+          //     let textNode = document.createTextNode(content_data.data[i][0].category);
+          //     Title.appendChild(textNode);
+          //     document.querySelectorAll('.pictitle4')[i].appendChild(Title)
+          // }
+
+          get();
+
+      }
+      req.send();
+  }
+  //利用 window 的 scroll 事件，搭配 HTML 元件的 getBoundingClientRect 等等方法來偵測頁面是否已經捲動到最下方。
+  var windowHeight = document.documentElement.clientHeight // 瀏覽器可視範圍
+  var count = 0;
+  let lock = false;
+  let keyword = "";
+
+  window.addEventListener('scroll', function () {
+      // 取得rect界限 top, left, right, 和 bottom
+      // 相對於瀏覽器可視範圍左上角
+      var targetRect = document.getElementsByClassName('bottom')[0].getBoundingClientRect()
+
+      //目標元素距離視窗頂部距離
+      var targetTop = targetRect.top
+      if (count <= 26) {
+          if (lock) {
+              return
+          } else {
+              console.log(targetTop, windowHeight);
+              if (targetTop < windowHeight) {
+                  count++
+                  //若目標元素距離視窗頂部距離<視窗高度，呼叫 API 載入下一頁的資訊
+                  //debounce(getnextpage, 3000)
+                  console.log(count)
+                  console.log("實驗抓值" + document.getElementById('Str').value)
+                  keyword = document.getElementById('Str').value
+                  setTimeout(getnextpage, 100);
+                  lock = true;
+
+              }
+          }
+      } else {
+          return
+      }
+
+      
+  })
+
+
+  //刪除收藏文章
+  function cancel(x) {
+      var id = x;
+      var articleid = {
+          ID: id
+      }
+      var req = new XMLHttpRequest();
+      req.open("post", window.location.origin +"/api/addlinkdel", true)
+      req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
+      var data = JSON.stringify(articleid); //將物件資料轉成字串
+
+      req.onload = function () {
+          if (req.status = 200) {
+              console.log('已刪除')
+              window.location.reload();
+          }
+      }
+      req.send(data);
+
+  }
+
+
+  var imgSrc1 = 'https://img.icons8.com/material-rounded/24/000000/filled-like.png'
+  var imgSrc2 = 'https://img.icons8.com/ios/50/000000/hearts--v1.png'
+  function sendlike_stat(x) {
+      let id = x
+      let likeitem = document.getElementById(x + 'like')
+      let getimgsrc = likeitem.getAttribute('src')
+      let articleid = {
+          ID: id,
+          liked: "N"
+      }
+      if (getimgsrc == imgSrc1) {
+          likeitem.removeAttribute("src", imgSrc1);
+          likeitem.setAttribute("src", imgSrc2);
+          articleid = {
+              ID: id,
+              liked: "N"
+          }
+      } else {
+          likeitem.removeAttribute("src", imgSrc2);
+          likeitem.setAttribute("src", imgSrc1);
+          articleid = {
+              ID: id,
+              liked: "Y"
+          }
+      }
+
+
+
+      console.log(JSON.stringify(articleid))
+
+      let req = new XMLHttpRequest();
+      req.open("post", window.location.origin +"/api/likedstat", true)
+      req.setRequestHeader("Cotnet-type", "application/json");
+      let data = JSON.stringify(articleid);
+
+      req.reload = function () {
+          if (req.status = 200) {
+              console.log("已記錄like狀態")
+              window.location.reload();
+          }
+      }
+      req.send(data);
+  }
+
+  //popup_登入
+
+  function popup() {
+      document.getElementById('popup1').classList.remove("overlay");
+      document.getElementById('popup1').classList.add("overlay_target")
+  }
+
+  function endpopup() {
+      document.getElementById('popup1').classList.remove("overlay_target");
+      document.getElementById('popup1').classList.add("overlay")
+
+  }
+  //popup_註冊
+
+  function popup2() {
+      document.getElementById('popup2').classList.remove("overlay");
+      document.getElementById('popup2').classList.add("overlay_target")
+  }
+
+  function endpopup2() {
+      document.getElementById('popup2').classList.remove("overlay_target");
+      document.getElementById('popup2').classList.add("overlay")
+      document.getElementById('popup1').classList.remove("overlay_target");
+      document.getElementById('popup1').classList.add("overlay")
+  }
+
+  function backloginpop() {
+      document.getElementById('popup2').classList.remove("overlay_target");
+      document.getElementById('popup1').classList.add("overlay_target")
+  }
+
+  //從前端POST資料到後端_註冊
+  function register() {
+      var name = document.getElementById('name').value;
+      var email = document.getElementById('email').value;
+      var password = document.getElementById('password').value;
+      var account = {
+          name: name,
+          email: email,
+          password: password
+      }
+      var req = new XMLHttpRequest();
+      req.open("post", window.location.origin +"/api/user", true)
+      req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
+      var data = JSON.stringify(account); //將物件資料轉成字串
+      let namemsg = document.getElementById('namemsg')
+      let mailbuildmsg = document.getElementById('mailbuildmsg')
+      let passwordmsg = document.getElementById('passwordbuildmsg')
+      if (name == "") {
+          mailbuildmsg.setAttribute('style', 'display:none')
+          passwordmsg.setAttribute('style', 'display:none')
+          namemsg.removeAttribute('style')
+      } else if (email == "") {
+          namemsg.setAttribute('style', 'display:none')
+          passwordmsg.setAttribute('style', 'display:none')
+          mailbuildmsg.removeAttribute('style')
+      } else if (password == "") {
+          mailbuildmsg.setAttribute('style', 'display:none')
+          namemsg.setAttribute('style', 'display:none')
+          passwordmsg.removeAttribute('style')
+      } else {
+          req.onload = function () {
+              namemsg.setAttribute('style', 'display:none')
+              mailbuildmsg.setAttribute('style', 'display:none')
+              passwordmsg.setAttribute('style', 'display:none')
+
+              if (req.status == 200) {
+                  alert('註冊成功')
+                  window.location.reload();
+              } else if (req.status >= 400 && req.status <= 500) {
+                  document.querySelector('.query').innerHTML = '<p style="color:red;">註冊失敗</p><p onclick="backloginpop();" style="cursor: pointer;">已經有帳戶了？點此登入</p>'
+              }
+
+          }
+          req.send(data); //送出字串
+      }
+
+  }
+
+  function login() {
+
+      var email = document.getElementById('loginemail').value;
+      var password = document.getElementById('loginpassword').value;
+      var account = {
+          email: email,
+          password: password
+      }
+      var req = new XMLHttpRequest();
+      req.open("post", window.location.origin +"/api/user/login", true)
+      req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
+      let data = JSON.stringify(account); //將物件資料轉成字串
+
+      req.onload = function () {
+
+          if (req.status == 200) {
+              window.location.reload();
+          } else {
+              if (email == "") {
+                  let mailmsg = document.getElementById('mailmsg')
+                  mailmsg.removeAttribute('style')
+              } else if (password == "") {
+                  let passwordmsg = document.getElementById('passwordmsg')
+                  mailmsg.setAttribute('style', 'display:none')
+                  passwordmsg.removeAttribute('style')
+              } else {
+                  passwordmsg.setAttribute('style', 'display:none')
+                  document.querySelector('.query0').innerHTML = '<p style="color:red">請輸入正確的帳號密碼</p><p onclick="popup2();" style="cursor:pointer;">還沒有帳戶？點此註冊</p>'
+              }
+
+          }
+
+      }
+      req.send(data); //送出字串
+
+  }
+  function get() {
+      var req = new XMLHttpRequest();
+      req.open("get", window.location.origin +"/api/user", true)
+      req.onload = function () {
+
+          if (req.responseText == '{"data": null}') {
+              console.log('未登入')
+
+
+          } else {
+              console.log('已登入')
+              var bt2 = document.getElementById('bt2');
+              bt2.innerHTML = '<div class="bt2" onclick="logout();">log out</div>';
+          }
+
+      }
+      req.send();
+
+
+  }
+
+  function logout() {
+      var req = new XMLHttpRequest();
+      req.open("delete", window.location.origin +"/api/user", true)
+      req.onload = function () {
+          if (req.status = 200) {
+              console.log('已登出')
+              window.location.reload();
+          }
+      }
+      req.send();
+
+  }
+
+
+  function reservation2() {
+      let bt2txt = document.querySelector('.bt2').innerText
+      if (bt2txt == "login/register") {
+          popup();
+      } else {
+          document.location.href = "/booking";
+      }
+  }
+
+  //add an article
+  function popup3() {
+      var req = new XMLHttpRequest();
+      req.open("get", window.location.origin +"/api/user", true)
+      req.onload = function () {
+
+          if (req.status == 200) {
+              document.getElementById('popup3').classList.remove("overlay");
+              document.getElementById('popup3').classList.add("overlay_target")
+
+          } else {
+              popup()
+          }
+
+      }
+      req.send();
+
+
+  }
+  function endpopup3() {
+      document.getElementById('popup3').classList.remove("overlay_target");
+      document.getElementById('popup3').classList.add("overlay")
+  }
+  function addlink() {
+      var urlhref = document.getElementById('addlink').value;
+      var link = {
+          url: urlhref,
+      }
+      var req = new XMLHttpRequest();
+      req.open("post", window.location.origin +"/api/addlink", true)
+      req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
+      var data = JSON.stringify(link); //將物件資料轉成字串
+
+      req.onload = function () {
+          if (req.status == 200) {
+              endpopup3();
+              alert('saved')
+              window.location.href=window.location.origin;
+          } else if (req.status == 400) {
+              alert('You have already saved it!')
+          }
+          else if (req.status > 400 && req.status <= 500) {
+              console.log('not saved')
+          }
+
+      }
+      req.send(data); //送出字串
+  }
+
+  function sendUrl(url) {
+
+      var link = {
+          url: url,
+      }
+      var req = new XMLHttpRequest();
+      req.open("post", window.location.origin +"/api/getcontent", true)
+      req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
+      var data = JSON.stringify(link); //將物件資料轉成字串
+
+      req.onload = function () {
+          if (req.status == 200) {
+              alert('url send')
+              window.location.replace("/content");
+          } else if (req.status >= 400 && req.status <= 500) {
+              console.log('url not been send')
+          }
+
+      }
+      req.send(data); //送出字串
+  }
+
+  function addFolder(foldername) {
+      alert(foldername)
+  }
+
+
+
+</script>
+{% endblock %}
+
+{% block a %}<a href="/" class="home">Home</a>
+<a href="/liked">Liked</a>{% endblock %}
+
+{% block div %}<p class="default">No articles in this folder.</p>{% endblock %}
