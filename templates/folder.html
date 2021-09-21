@@ -3,55 +3,60 @@
 {% block script %}
 <script type="text/javascript">
 
-  //抓第一頁
-  function getData() {
-      let getUrlString = location.href;
-      let url = new URL(getUrlString);
-      let param = url.pathname.replace("/folder/", "")
-      let req = new XMLHttpRequest();
-      req.open("get", window.location.origin +"/api/addlinkbyfolder/" + param)
+    //抓第一頁
+    function getData() {
+        let getUrlString = location.href;
+        let url = new URL(getUrlString);
+        let param = url.pathname.replace("/folder/", "")
+        let req = new XMLHttpRequest();
+        req.open("get", window.location.origin + "/api/addlinkbyfolder/" + param)
 
-      req.onload = function () {
-          let main = document.querySelector('.main')
-          // 分析JSON資料
-          var content_data = JSON.parse(req.responseText);
-          let defaulttext = document.querySelector('.default')
-          let total = JSON.parse(req.response).data.length - 1
-          if (total + 1 > 0) {
-              defaulttext.innerHTML = ""
-          }
+        req.onload = function () {
+            if (req.status == 200) {
+                renderfolder();
+                var bt2 = document.getElementById('bt2');
+                bt2.innerHTML = '<div class="bt2" onclick="logout();">log out</div>';
+                
+                let main = document.querySelector('.main')
+                // 分析JSON資料
+                var content_data = JSON.parse(req.responseText);
+                let defaulttext = document.querySelector('.default')
+                let total = JSON.parse(req.response).data.length - 1
+                if (total + 1 > 0) {
+                    defaulttext.innerHTML = ""
+                }
 
 
-          for (var i = total; i >= 0; i--) {
+                for (var i = total; i >= 0; i--) {
 
-              //first image 
-              let content_img = document.createElement('img');
-              content_img.classList.add('img-width');
-              let imgSrc = content_data.data[i][0].pic;
-              content_img.setAttribute("src", imgSrc);
-              // link.appendChild(content_img);
-              // document.querySelectorAll('.pictitle1')[i].appendChild(content_img);
-              //url
-              let url = content_data.data[i][0].url;
+                    //first image 
+                    let content_img = document.createElement('img');
+                    content_img.classList.add('img-width');
+                    let imgSrc = content_data.data[i][0].pic;
+                    content_img.setAttribute("src", imgSrc);
+                    // link.appendChild(content_img);
+                    // document.querySelectorAll('.pictitle1')[i].appendChild(content_img);
+                    //url
+                    let url = content_data.data[i][0].url;
 
-              //文章名稱
-              let textNode = content_data.data[i][0].title;
+                    //文章名稱
+                    let textNode = content_data.data[i][0].title;
 
-              //文章摘要
-              let textNode2 = content_data.data[i][0].des;
+                    //文章摘要
+                    let textNode2 = content_data.data[i][0].des;
 
-              //ID
-              let textNode3 = content_data.data[i][0].id;
+                    //ID
+                    let textNode3 = content_data.data[i][0].id;
 
-              //liked
-              let liked = content_data.data[i][0].liked;
+                    //liked
+                    let liked = content_data.data[i][0].liked;
 
-              let heart_imgsrc = imgSrc1
-              if (liked == 'N' || liked === null) {
-                  heart_imgsrc = imgSrc2
-              }
+                    let heart_imgsrc = imgSrc1
+                    if (liked == 'N' || liked === null) {
+                        heart_imgsrc = imgSrc2
+                    }
 
-              let item = `
+                    let item = `
               <div class="pictitle">
               <div class="set">
               <div class="dset"><span class="pictitle2"><a id=${url} onclick="sendUrl(this.id);">${content_data.data[i][0].title}</a></span></div>
@@ -68,364 +73,383 @@
               </div>
               `
 
+                    main.insertAdjacentHTML('beforeend', item);
 
-              main.insertAdjacentHTML('beforeend', item);
+                }
+            }
+        }
+        req.send();
+    }
+    //利用 window 的 scroll 事件，搭配 HTML 元件的 getBoundingClientRect 等等方法來偵測頁面是否已經捲動到最下方。
+    var windowHeight = document.documentElement.clientHeight // 瀏覽器可視範圍
+    var count = 0;
+    let lock = false;
+    let keyword = "";
 
-          }
+    window.addEventListener('scroll', function () {
+        // 取得rect界限 top, left, right, 和 bottom
+        // 相對於瀏覽器可視範圍左上角
+        var targetRect = document.getElementsByClassName('bottom')[0].getBoundingClientRect()
 
+        //目標元素距離視窗頂部距離
+        var targetTop = targetRect.top
+        if (count <= 26) {
+            if (lock) {
+                return
+            } else {
+                console.log(targetTop, windowHeight);
+                if (targetTop < windowHeight) {
+                    count++
+                    //若目標元素距離視窗頂部距離<視窗高度，呼叫 API 載入下一頁的資訊
+                    //debounce(getnextpage, 3000)
+                    console.log(count)
+                    console.log("實驗抓值" + document.getElementById('Str').value)
+                    keyword = document.getElementById('Str').value
+                    setTimeout(getnextpage, 100);
+                    lock = true;
 
-          //genre
-          // for (var i = 0; i < 12; i++) {
-          //     let Title = document.createElement('div');
-          //     Title.classList.add('drawing3');
-          //     //加入文章名稱
-          //     let textNode = document.createTextNode(content_data.data[i][0].category);
-          //     Title.appendChild(textNode);
-          //     document.querySelectorAll('.pictitle4')[i].appendChild(Title)
-          // }
-
-          get();
-
-      }
-      req.send();
-  }
-  //利用 window 的 scroll 事件，搭配 HTML 元件的 getBoundingClientRect 等等方法來偵測頁面是否已經捲動到最下方。
-  var windowHeight = document.documentElement.clientHeight // 瀏覽器可視範圍
-  var count = 0;
-  let lock = false;
-  let keyword = "";
-
-  window.addEventListener('scroll', function () {
-      // 取得rect界限 top, left, right, 和 bottom
-      // 相對於瀏覽器可視範圍左上角
-      var targetRect = document.getElementsByClassName('bottom')[0].getBoundingClientRect()
-
-      //目標元素距離視窗頂部距離
-      var targetTop = targetRect.top
-      if (count <= 26) {
-          if (lock) {
-              return
-          } else {
-              console.log(targetTop, windowHeight);
-              if (targetTop < windowHeight) {
-                  count++
-                  //若目標元素距離視窗頂部距離<視窗高度，呼叫 API 載入下一頁的資訊
-                  //debounce(getnextpage, 3000)
-                  console.log(count)
-                  console.log("實驗抓值" + document.getElementById('Str').value)
-                  keyword = document.getElementById('Str').value
-                  setTimeout(getnextpage, 100);
-                  lock = true;
-
-              }
-          }
-      } else {
-          return
-      }
-
-      
-  })
+                }
+            }
+        } else {
+            return
+        }
 
 
-  //刪除收藏文章
-  function cancel(x) {
-      var id = x;
-      var articleid = {
-          ID: id
-      }
-      var req = new XMLHttpRequest();
-      req.open("post", window.location.origin +"/api/addlinkdel", true)
-      req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
-      var data = JSON.stringify(articleid); //將物件資料轉成字串
-
-      req.onload = function () {
-          if (req.status = 200) {
-              console.log('已刪除')
-              window.location.reload();
-          }
-      }
-      req.send(data);
-
-  }
+    })
 
 
-  var imgSrc1 = 'https://img.icons8.com/material-rounded/24/000000/filled-like.png'
-  var imgSrc2 = 'https://img.icons8.com/ios/50/000000/hearts--v1.png'
-  function sendlike_stat(x) {
-      let id = x
-      let likeitem = document.getElementById(x + 'like')
-      let getimgsrc = likeitem.getAttribute('src')
-      let articleid = {
-          ID: id,
-          liked: "N"
-      }
-      if (getimgsrc == imgSrc1) {
-          likeitem.removeAttribute("src", imgSrc1);
-          likeitem.setAttribute("src", imgSrc2);
-          articleid = {
-              ID: id,
-              liked: "N"
-          }
-      } else {
-          likeitem.removeAttribute("src", imgSrc2);
-          likeitem.setAttribute("src", imgSrc1);
-          articleid = {
-              ID: id,
-              liked: "Y"
-          }
-      }
+    //刪除收藏文章
+    function cancel(x) {
+        var id = x;
+        var articleid = {
+            ID: id
+        }
+        var req = new XMLHttpRequest();
+        req.open("post", window.location.origin + "/api/addlinkdel", true)
+        req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
+        var data = JSON.stringify(articleid); //將物件資料轉成字串
+
+        req.onload = function () {
+            if (req.status = 200) {
+                console.log('已刪除')
+                window.location.reload();
+            }
+        }
+        req.send(data);
+
+    }
+
+
+    var imgSrc1 = 'https://img.icons8.com/material-rounded/24/000000/filled-like.png'
+    var imgSrc2 = 'https://img.icons8.com/ios/50/000000/hearts--v1.png'
+    function sendlike_stat(x) {
+        let id = x
+        let likeitem = document.getElementById(x + 'like')
+        let getimgsrc = likeitem.getAttribute('src')
+        let articleid = {
+            ID: id,
+            liked: "N"
+        }
+        if (getimgsrc == imgSrc1) {
+            likeitem.removeAttribute("src", imgSrc1);
+            likeitem.setAttribute("src", imgSrc2);
+            articleid = {
+                ID: id,
+                liked: "N"
+            }
+        } else {
+            likeitem.removeAttribute("src", imgSrc2);
+            likeitem.setAttribute("src", imgSrc1);
+            articleid = {
+                ID: id,
+                liked: "Y"
+            }
+        }
 
 
 
-      console.log(JSON.stringify(articleid))
+        console.log(JSON.stringify(articleid))
 
-      let req = new XMLHttpRequest();
-      req.open("post", window.location.origin +"/api/likedstat", true)
-      req.setRequestHeader("Cotnet-type", "application/json");
-      let data = JSON.stringify(articleid);
+        let req = new XMLHttpRequest();
+        req.open("post", window.location.origin + "/api/likedstat", true)
+        req.setRequestHeader("Cotnet-type", "application/json");
+        let data = JSON.stringify(articleid);
 
-      req.reload = function () {
-          if (req.status = 200) {
-              console.log("已記錄like狀態")
-              window.location.reload();
-          }
-      }
-      req.send(data);
-  }
+        req.reload = function () {
+            if (req.status = 200) {
+                console.log("已記錄like狀態")
+                window.location.reload();
+            }
+        }
+        req.send(data);
+    }
 
-  //popup_登入
+    //popup_登入
 
-  function popup() {
-      document.getElementById('popup1').classList.remove("overlay");
-      document.getElementById('popup1').classList.add("overlay_target")
-  }
+    function popup() {
+        document.getElementById('popup1').classList.remove("overlay");
+        document.getElementById('popup1').classList.add("overlay_target")
+    }
 
-  function endpopup() {
-      document.getElementById('popup1').classList.remove("overlay_target");
-      document.getElementById('popup1').classList.add("overlay")
+    function endpopup() {
+        document.getElementById('popup1').classList.remove("overlay_target");
+        document.getElementById('popup1').classList.add("overlay")
 
-  }
-  //popup_註冊
+    }
+    //popup_註冊
 
-  function popup2() {
-      document.getElementById('popup2').classList.remove("overlay");
-      document.getElementById('popup2').classList.add("overlay_target")
-  }
+    function popup2() {
+        document.getElementById('popup2').classList.remove("overlay");
+        document.getElementById('popup2').classList.add("overlay_target")
+    }
 
-  function endpopup2() {
-      document.getElementById('popup2').classList.remove("overlay_target");
-      document.getElementById('popup2').classList.add("overlay")
-      document.getElementById('popup1').classList.remove("overlay_target");
-      document.getElementById('popup1').classList.add("overlay")
-  }
+    function endpopup2() {
+        document.getElementById('popup2').classList.remove("overlay_target");
+        document.getElementById('popup2').classList.add("overlay")
+        document.getElementById('popup1').classList.remove("overlay_target");
+        document.getElementById('popup1').classList.add("overlay")
+    }
 
-  function backloginpop() {
-      document.getElementById('popup2').classList.remove("overlay_target");
-      document.getElementById('popup1').classList.add("overlay_target")
-  }
+    function backloginpop() {
+        document.getElementById('popup2').classList.remove("overlay_target");
+        document.getElementById('popup1').classList.add("overlay_target")
+    }
 
-  //從前端POST資料到後端_註冊
-  function register() {
-      var name = document.getElementById('name').value;
-      var email = document.getElementById('email').value;
-      var password = document.getElementById('password').value;
-      var account = {
-          name: name,
-          email: email,
-          password: password
-      }
-      var req = new XMLHttpRequest();
-      req.open("post", window.location.origin +"/api/user", true)
-      req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
-      var data = JSON.stringify(account); //將物件資料轉成字串
-      let namemsg = document.getElementById('namemsg')
-      let mailbuildmsg = document.getElementById('mailbuildmsg')
-      let passwordmsg = document.getElementById('passwordbuildmsg')
-      if (name == "") {
-          mailbuildmsg.setAttribute('style', 'display:none')
-          passwordmsg.setAttribute('style', 'display:none')
-          namemsg.removeAttribute('style')
-      } else if (email == "") {
-          namemsg.setAttribute('style', 'display:none')
-          passwordmsg.setAttribute('style', 'display:none')
-          mailbuildmsg.removeAttribute('style')
-      } else if (password == "") {
-          mailbuildmsg.setAttribute('style', 'display:none')
-          namemsg.setAttribute('style', 'display:none')
-          passwordmsg.removeAttribute('style')
-      } else {
-          req.onload = function () {
-              namemsg.setAttribute('style', 'display:none')
-              mailbuildmsg.setAttribute('style', 'display:none')
-              passwordmsg.setAttribute('style', 'display:none')
+    //從前端POST資料到後端_註冊
+    function register() {
+        var name = document.getElementById('name').value;
+        var email = document.getElementById('email').value;
+        var password = document.getElementById('password').value;
+        var account = {
+            name: name,
+            email: email,
+            password: password
+        }
+        var req = new XMLHttpRequest();
+        req.open("post", window.location.origin + "/api/user", true)
+        req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
+        var data = JSON.stringify(account); //將物件資料轉成字串
+        let namemsg = document.getElementById('namemsg')
+        let mailbuildmsg = document.getElementById('mailbuildmsg')
+        let passwordmsg = document.getElementById('passwordbuildmsg')
+        if (name == "") {
+            mailbuildmsg.setAttribute('style', 'display:none')
+            passwordmsg.setAttribute('style', 'display:none')
+            namemsg.removeAttribute('style')
+        } else if (email == "") {
+            namemsg.setAttribute('style', 'display:none')
+            passwordmsg.setAttribute('style', 'display:none')
+            mailbuildmsg.removeAttribute('style')
+        } else if (password == "") {
+            mailbuildmsg.setAttribute('style', 'display:none')
+            namemsg.setAttribute('style', 'display:none')
+            passwordmsg.removeAttribute('style')
+        } else {
+            req.onload = function () {
+                namemsg.setAttribute('style', 'display:none')
+                mailbuildmsg.setAttribute('style', 'display:none')
+                passwordmsg.setAttribute('style', 'display:none')
 
-              if (req.status == 200) {
-                  alert('註冊成功')
-                  window.location.reload();
-              } else if (req.status >= 400 && req.status <= 500) {
-                  document.querySelector('.query').innerHTML = '<p style="color:red;">註冊失敗</p><p onclick="backloginpop();" style="cursor: pointer;">已經有帳戶了？點此登入</p>'
-              }
+                if (req.status == 200) {
+                    alert('註冊成功')
+                    window.location.reload();
+                } else if (req.status >= 400 && req.status <= 500) {
+                    document.querySelector('.query').innerHTML = '<p style="color:red;">註冊失敗</p><p onclick="backloginpop();" style="cursor: pointer;">已經有帳戶了？點此登入</p>'
+                }
 
-          }
-          req.send(data); //送出字串
-      }
+            }
+            req.send(data); //送出字串
+        }
 
-  }
+    }
 
-  function login() {
+    function login() {
 
-      var email = document.getElementById('loginemail').value;
-      var password = document.getElementById('loginpassword').value;
-      var account = {
-          email: email,
-          password: password
-      }
-      var req = new XMLHttpRequest();
-      req.open("post", window.location.origin +"/api/user/login", true)
-      req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
-      let data = JSON.stringify(account); //將物件資料轉成字串
+        var email = document.getElementById('loginemail').value;
+        var password = document.getElementById('loginpassword').value;
+        var account = {
+            email: email,
+            password: password
+        }
+        var req = new XMLHttpRequest();
+        req.open("post", window.location.origin + "/api/user/login", true)
+        req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
+        let data = JSON.stringify(account); //將物件資料轉成字串
 
-      req.onload = function () {
+        req.onload = function () {
 
-          if (req.status == 200) {
-              window.location.reload();
-          } else {
-              if (email == "") {
-                  let mailmsg = document.getElementById('mailmsg')
-                  mailmsg.removeAttribute('style')
-              } else if (password == "") {
-                  let passwordmsg = document.getElementById('passwordmsg')
-                  mailmsg.setAttribute('style', 'display:none')
-                  passwordmsg.removeAttribute('style')
-              } else {
-                  passwordmsg.setAttribute('style', 'display:none')
-                  document.querySelector('.query0').innerHTML = '<p style="color:red">請輸入正確的帳號密碼</p><p onclick="popup2();" style="cursor:pointer;">還沒有帳戶？點此註冊</p>'
-              }
+            if (req.status == 200) {
+                window.location.reload();
+            } else {
+                if (email == "") {
+                    let mailmsg = document.getElementById('mailmsg')
+                    mailmsg.removeAttribute('style')
+                } else if (password == "") {
+                    let passwordmsg = document.getElementById('passwordmsg')
+                    mailmsg.setAttribute('style', 'display:none')
+                    passwordmsg.removeAttribute('style')
+                } else {
+                    passwordmsg.setAttribute('style', 'display:none')
+                    document.querySelector('.query0').innerHTML = '<p style="color:red">請輸入正確的帳號密碼</p><p onclick="popup2();" style="cursor:pointer;">還沒有帳戶？點此註冊</p>'
+                }
 
-          }
+            }
 
-      }
-      req.send(data); //送出字串
+        }
+        req.send(data); //送出字串
 
-  }
-  function get() {
-      var req = new XMLHttpRequest();
-      req.open("get", window.location.origin +"/api/user", true)
-      req.onload = function () {
+    }
+    
 
-          if (req.responseText == '{"data": null}') {
-              console.log('未登入')
+    function logout() {
+        var req = new XMLHttpRequest();
+        req.open("delete", window.location.origin + "/api/user", true)
+        req.onload = function () {
+            if (req.status = 200) {
+                console.log('已登出')
+                window.location.reload();
+            }
+        }
+        req.send();
 
-
-          } else {
-              console.log('已登入')
-              var bt2 = document.getElementById('bt2');
-              bt2.innerHTML = '<div class="bt2" onclick="logout();">log out</div>';
-          }
-
-      }
-      req.send();
+    }
 
 
-  }
+    function reservation2() {
+        let bt2txt = document.querySelector('.bt2').innerText
+        if (bt2txt == "login/register") {
+            popup();
+        } else {
+            document.location.href = "/booking";
+        }
+    }
 
-  function logout() {
-      var req = new XMLHttpRequest();
-      req.open("delete", window.location.origin +"/api/user", true)
-      req.onload = function () {
-          if (req.status = 200) {
-              console.log('已登出')
-              window.location.reload();
-          }
-      }
-      req.send();
+    //add an article
+    function popup3() {
+        var req = new XMLHttpRequest();
+        req.open("get", window.location.origin + "/api/user", true)
+        req.onload = function () {
 
-  }
+            if (req.status == 200) {
+                document.getElementById('popup3').classList.remove("overlay");
+                document.getElementById('popup3').classList.add("overlay_target")
 
+            } else {
+                popup()
+            }
 
-  function reservation2() {
-      let bt2txt = document.querySelector('.bt2').innerText
-      if (bt2txt == "login/register") {
-          popup();
-      } else {
-          document.location.href = "/booking";
-      }
-  }
-
-  //add an article
-  function popup3() {
-      var req = new XMLHttpRequest();
-      req.open("get", window.location.origin +"/api/user", true)
-      req.onload = function () {
-
-          if (req.status == 200) {
-              document.getElementById('popup3').classList.remove("overlay");
-              document.getElementById('popup3').classList.add("overlay_target")
-
-          } else {
-              popup()
-          }
-
-      }
-      req.send();
+        }
+        req.send();
 
 
-  }
-  function endpopup3() {
-      document.getElementById('popup3').classList.remove("overlay_target");
-      document.getElementById('popup3').classList.add("overlay")
-  }
-  function addlink() {
-      var urlhref = document.getElementById('addlink').value;
-      var link = {
-          url: urlhref,
-      }
-      var req = new XMLHttpRequest();
-      req.open("post", window.location.origin +"/api/addlink", true)
-      req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
-      var data = JSON.stringify(link); //將物件資料轉成字串
+    }
+    function endpopup3() {
+        document.getElementById('popup3').classList.remove("overlay_target");
+        document.getElementById('popup3').classList.add("overlay")
+    }
+    function addlink() {
+        var urlhref = document.getElementById('addlink').value;
+        var link = {
+            url: urlhref,
+        }
+        var req = new XMLHttpRequest();
+        req.open("post", window.location.origin + "/api/addlink", true)
+        req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
+        var data = JSON.stringify(link); //將物件資料轉成字串
 
-      req.onload = function () {
-          if (req.status == 200) {
-              endpopup3();
-              alert('saved')
-              window.location.href=window.location.origin;
-          } else if (req.status == 400) {
-              alert('You have already saved it!')
-          }
-          else if (req.status > 400 && req.status <= 500) {
-              console.log('not saved')
-          }
+        req.onload = function () {
+            if (req.status == 200) {
+                endpopup3();
+                alert('saved')
+                window.location.href = window.location.origin;
+            } else if (req.status == 400) {
+                alert('You have already saved it!')
+            }
+            else if (req.status > 400 && req.status <= 500) {
+                console.log('not saved')
+            }
 
-      }
-      req.send(data); //送出字串
-  }
+        }
+        req.send(data); //送出字串
+    }
 
-  function sendUrl(url) {
+    function sendUrl(url) {
 
-      var link = {
-          url: url,
-      }
-      var req = new XMLHttpRequest();
-      req.open("post", window.location.origin +"/api/getcontent", true)
-      req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
-      var data = JSON.stringify(link); //將物件資料轉成字串
+        var link = {
+            url: url,
+        }
+        var req = new XMLHttpRequest();
+        req.open("post", window.location.origin + "/api/getcontent", true)
+        req.setRequestHeader("Content-type", "application/json"); //告訴後端是用 JSON 格式
+        var data = JSON.stringify(link); //將物件資料轉成字串
 
-      req.onload = function () {
-          if (req.status == 200) {
-              alert('url send')
-              window.location.replace("/content");
-          } else if (req.status >= 400 && req.status <= 500) {
-              console.log('url not been send')
-          }
+        req.onload = function () {
+            if (req.status == 200) {
+                alert('url send')
+                window.location.replace("/content");
+            } else if (req.status >= 400 && req.status <= 500) {
+                console.log('url not been send')
+            }
 
-      }
-      req.send(data); //送出字串
-  }
+        }
+        req.send(data); //送出字串
+    }
 
-  function addFolder(foldername) {
-      alert(foldername)
-  }
+    function addFolder(foldername) {
+        let folder = {
+            name: foldername,
+        }
+        let emptyinput = document.querySelector(".tobefilled")
+        let req = new XMLHttpRequest();
+        req.open('post', window.location.origin + '/api/folder', true)
+        req.setRequestHeader("Content-type", "application/json");
+        let data = JSON.stringify(folder);
+        req.onload = function () {
+            if (req.status == 200) {
+
+                let addsection = document.querySelector('.side-menu')
+                let item =
+                    `<a href="/folder/${foldername}">
+                            <img class="resulticon" src="{{ url_for('static', filename='images/icons8-opened-folder-50.png') }}" alt="">
+                            <span id="folder_inline_add_field" class="folder_inline_add_field" name="folder[title]">${foldername}</span>
+                        </a>`
+                emptyinput.value = ""
+                addsection.insertAdjacentHTML('beforeend', item);
+            } else {
+                console.log('folder name not been send')
+            }
+        }
+        req.send(data)
+    }
+    function renderfolder() {
+        let req = new XMLHttpRequest();
+        req.open("get", window.location.origin + "/api/getfolder", true)
+        req.onload = function () {
+            let addsection = document.querySelector('.add_folder')
+            let emptyinput = document.querySelector(".tobefilled")
+            // 分析JSON資料
+            let content_data = JSON.parse(req.responseText);
+            total = JSON.parse(req.response).data.length - 1
+
+
+            for (var i = total; i >= 0; i--) {
+                let foldertextNode = content_data.data[i][0].foldername;
+
+                let item =
+                    `<a href="/folder/${foldertextNode}">
+                            <img class="resulticon" src="{{ url_for('static', filename='images/icons8-opened-folder-50.png') }}" alt="">
+                            <span id="folder_inline_add_field" class="folder_inline_add_field" name="folder[title]">${foldertextNode}</span>
+                    </a>`
+
+                addsection.insertAdjacentHTML('afterend', item);
+            }
+
+
+        }
+        req.send();
+
+    }
+
 
 
 
