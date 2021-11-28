@@ -313,6 +313,8 @@ def addlink():
                 # RDSconn.commit()
                 # RDSconn.ping()
                 # cur=RDSconn.cursor()
+                conn = mydbPOOL.connection()
+                mycursor = conn.cursor()
                 mycursor.execute("INSERT INTO article (url, user_ID) VALUES (%s,%s)",(url,user_ID))
                 # RDSconn.commit()
                 conn.commit()
