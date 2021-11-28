@@ -15,6 +15,7 @@ import cutter as cutter
 from flask import Flask
 from flask_hashing import Hashing
 import pymysql
+from dbutils.pooled_db import PooledDB
 
 #RDS
 password2=os.getenv("password2")
@@ -29,6 +30,27 @@ db_settings = {
 RDSconn = pymysql.connect(**db_settings)
 RDSconn.ping(reconnect=True)
 print(RDSconn.ping(reconnect=True))
+
+#connection pool
+mydbPOOL  = PooledDB(
+    creator=pymysql,  # 使用連結資料庫的模組
+    maxconnections=10,  # 連線池允許的最大連線數，0和None表示不限制連線數
+    mincached=2,  # 初始化時，連結池中至少建立的空閒的連結，0表示不建立
+    maxcached=5,  # 連結池中最多閒置的連結，0和None不限制
+    maxshared=0,  # 連結池中最多共享的連結數量，0和None表示全部共享。PS: 無用，因為pymysql和MySQLdb等模組的 threadsafety都為1，所有值無論設定為多少，_maxcached永遠為0，所以永遠是所有連結都共享。
+    blocking=True,  # 連線池中如果沒有可用連線後，是否阻塞等待。True，等待；False，不等待然後報錯
+    maxusage=None,  # 一個連結最多被重複使用的次數，None表示無限制
+    setsession=[],  # 開始會話前執行的命令列表。如：["set datestyle to ...", "set time zone ..."]
+    ping=0,
+    # ping MySQL服務端，檢查是否服務可用。# 如：0 = None = never, 1 = default = whenever it is requested, 2 = when a cursor is created, 4 = when a query is executed, 7 = always
+    host='website.cmrrlip8wwqp.us-east-2.rds.amazonaws.com',
+    port=3306,
+    user='admin',
+    password=password2,
+    database='website',
+    charset='utf8'
+)
+
 
 
 #MySQL
@@ -76,32 +98,36 @@ def user_get():
         user_ID = session['username']
         
     # 取出id
-        RDSconn.ping()
-        with RDSconn.cursor() as cursor:
-            # 新增資料指令
-            command = "SELECT ID FROM user WHERE ID=%s"
-            # 執行指令
-            cursor.execute(command, (user_ID,))
-            # 取得所有資料
-            id = cursor.fetchall()
-        
-            id = int(str(id)[2:len(id)-5])
-        #         # 取出使用者姓名
-            command = "SELECT username FROM user WHERE ID=%s"
-            RDSconn.ping()
-            cur=RDSconn.cursor()
-            cur.execute(command, (user_ID,))
-            name = cur.fetchall()
-            name = str(name)[3:len(name)-5]
+        # RDSconn.ping()
+        # with RDSconn.cursor() as cursor:
+        conn = mydbPOOL.connection()
+        mycursor = conn.cursor()
+        # 新增資料指令
+        command = "SELECT ID FROM user WHERE ID=%s"
+        # 執行指令
+        mycursor.execute(command, (user_ID,))
+        # 取得所有資料
+        id = mycursor.fetchall()
+    
+        id = int(str(id)[2:len(id)-5])
+    #         # 取出使用者姓名
+        command = "SELECT username FROM user WHERE ID=%s"
+        # RDSconn.ping()
+        # cur=RDSconn.cursor()
+        conn = mydbPOOL.connection()
+        mycursor = conn.cursor()
+        mycursor.execute(command, (user_ID,))
+        name = mycursor.fetchall()
+        name = str(name)[3:len(name)-5]
 
-            successmessage = {
-                            "data": {
-                                "id": id,
-                                "name": name
-                            }
-                            }
+        successmessage = {
+                        "data": {
+                            "id": id,
+                            "name": name
+                        }
+                        }
 
-            return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
+        return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
     else:
         # null 表示未登入
         failmessage = {"data": None}
@@ -121,14 +147,16 @@ def user_post():
         password = data['password']
         h = hashing.hash_value(password, salt='abcd')
         password_hashed = h   
-        RDSconn.ping()
-        with RDSconn.cursor() as cursor:
-            # 新增資料指令
-            command = "SELECT username FROM user where email=%s"
-            # 執行指令
-            cursor.execute(command, (email,))
-            # 取得所有資料
-            result_count = len(cursor.fetchall())
+        # RDSconn.ping()
+        # with RDSconn.cursor() as cursor:
+        conn = mydbPOOL.connection()
+        mycursor = conn.cursor()
+        # 新增資料指令
+        command = "SELECT username FROM user where email=%s"
+        # 執行指令
+        mycursor.execute(command, (email,))
+        # 取得所有資料
+        result_count = len(mycursor.fetchall())
 
         if result_count >= 1:
             failmessage = {
@@ -137,41 +165,47 @@ def user_post():
                             }
             return json.dumps(failmessage, ensure_ascii=False, indent=2), 400, {"Content-Type": "application/json"}
         else:
-            RDSconn.ping()
-            # 建立Cursor物件
-            with RDSconn.cursor() as cursor:
-                # 新增資料SQL語法                
-                cursor.execute("INSERT INTO user (username,email,password) VALUES (%s, %s, %s)",(name, email, password_hashed))
-                RDSconn.commit()
-                successmessage = {
-                                    "ok": True,
-                                    }
-                val_hash = hashing.hash_value(password, salt='abcd')
-                    
-                if hashing.check_value(val_hash, password, salt='abcd'):
-                    RDSconn.ping()
-                    with RDSconn.cursor() as cursor:
-                        # 新增資料指令
-                        command = "SELECT ID FROM user WHERE email=%s and password=%s"
-                        # 執行指令
-                        cursor.execute(command, (email, val_hash))
-                        # 取得所有資料
-                        result = cursor.fetchall()
-                        session['username'] = result[0][0]
-
-                        successmessage = {
-                                        "ok": True
-                                        }
-                        return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
-                else:
-                        failmessage = {
-                            "error": True,
-                            "message": "帳號或密碼錯誤"
-                        }
-
-                        return json.dumps(failmessage, ensure_ascii=False, indent=2), 400, {"Content-Type": "application/json"}
-
+            # RDSconn.ping()
+            # # 建立Cursor物件
+            # with RDSconn.cursor() as cursor:
+            conn = mydbPOOL.connection()
+            mycursor = conn.cursor()
+            # 新增資料SQL語法                
+            mycursor.execute("INSERT INTO user (username,email,password) VALUES (%s, %s, %s)",(name, email, password_hashed))
+            # RDSconn.commit()
+            conn.commit()
+            conn.close()
+            successmessage = {
+                                "ok": True,
+                                }
+            val_hash = hashing.hash_value(password, salt='abcd')
                 
+            if hashing.check_value(val_hash, password, salt='abcd'):
+                # RDSconn.ping()
+                # with RDSconn.cursor() as cursor:
+                conn = mydbPOOL.connection()
+                mycursor = conn.cursor()
+                # 新增資料指令
+                command = "SELECT ID FROM user WHERE email=%s and password=%s"
+                # 執行指令
+                mycursor.execute(command, (email, val_hash))
+                # 取得所有資料
+                result = mycursor.fetchall()
+                session['username'] = result[0][0]
+
+                successmessage = {
+                                "ok": True
+                                }
+                return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
+            else:
+                    failmessage = {
+                        "error": True,
+                        "message": "帳號或密碼錯誤"
+                    }
+
+                    return json.dumps(failmessage, ensure_ascii=False, indent=2), 400, {"Content-Type": "application/json"}
+
+            
     except:
         failmessage2 = {
             "error": True,
@@ -192,20 +226,22 @@ def user_patch():
         val_hash = hashing.hash_value(password, salt='abcd')
                     
         if hashing.check_value(val_hash, password, salt='abcd'):
-            RDSconn.ping()
-            with RDSconn.cursor() as cursor:
-                # 新增資料指令
-                command = "SELECT ID FROM user WHERE email=%s and password=%s"
-                # 執行指令
-                cursor.execute(command, (email, val_hash))
-                # 取得所有資料
-                result = cursor.fetchall()
-                session['username'] = result[0][0]
+            # RDSconn.ping()
+            # with RDSconn.cursor() as cursor:
+            conn = mydbPOOL.connection()
+            mycursor = conn.cursor()
+            # 新增資料指令
+            command = "SELECT ID FROM user WHERE email=%s and password=%s"
+            # 執行指令
+            mycursor.execute(command, (email, val_hash))
+            # 取得所有資料
+            result = mycursor.fetchall()
+            session['username'] = result[0][0]
 
-                successmessage = {
-                                "ok": True
-                                }
-                return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
+            successmessage = {
+                            "ok": True
+                            }
+            return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
         else:
                 failmessage = {
                     "error": True,
@@ -249,14 +285,16 @@ def addlink():
             if pic=='None':
                 pic='https://img.icons8.com/ios/100/000000/e-learning-2.png'
             
-            RDSconn.ping()
-            with RDSconn.cursor() as cursor:
-                # 新增資料指令
-                command = "SELECT ID FROM url where url=%s AND user_ID=%s"
-                # 執行指令
-                cursor.execute(command, (url,user_ID))
-                # 取得所有資料
-                result_count = len(cursor.fetchall())
+            # RDSconn.ping()
+            # with RDSconn.cursor() as cursor:
+            conn = mydbPOOL.connection()
+            mycursor = conn.cursor()
+            # 新增資料指令
+            command = "SELECT ID FROM url where url=%s AND user_ID=%s"
+            # 執行指令
+            mycursor.execute(command, (url,user_ID))
+            # 取得所有資料
+            result_count = len(mycursor.fetchall())
 
             if result_count >= 1:
                 failmessage = {
@@ -265,14 +303,20 @@ def addlink():
                                 }
                 return json.dumps(failmessage, ensure_ascii=False, indent=2), 400, {"Content-Type": "application/json"}
             else:
-                RDSconn.ping()
-                cur=RDSconn.cursor()
-                cur.execute("INSERT INTO url (url, title, des, pic, user_ID) VALUES (%s,%s,%s,%s,%s)",(url,tilte,des,pic,user_ID))
-                RDSconn.commit()
-                RDSconn.ping()
-                cur=RDSconn.cursor()
-                cur.execute("INSERT INTO article (url, user_ID) VALUES (%s,%s)",(url,user_ID))
-                RDSconn.commit()
+                # RDSconn.ping()
+                # cur=RDSconn.cursor()
+                conn = mydbPOOL.connection()
+                mycursor = conn.cursor()
+                mycursor.execute("INSERT INTO url (url, title, des, pic, user_ID) VALUES (%s,%s,%s,%s,%s)",(url,tilte,des,pic,user_ID))
+                conn.commit()
+                conn.close()
+                # RDSconn.commit()
+                # RDSconn.ping()
+                # cur=RDSconn.cursor()
+                mycursor.execute("INSERT INTO article (url, user_ID) VALUES (%s,%s)",(url,user_ID))
+                # RDSconn.commit()
+                conn.commit()
+                conn.close()
                 successmessage = {
                                     "ok": True,
                                     }
@@ -284,31 +328,33 @@ def renderlink():
     
     if 'username' in session:
         user_ID = session['username']
-        RDSconn.ping()
-        with RDSconn.cursor() as cursor:
-            # 新增資料指令
-            command = "SELECT * FROM website.url  WHERE user_ID = %s and foldername is null;"
-            # 執行指令
-            cursor.execute(command, (user_ID,))
-            # 取得所有資料
-            content = cursor.fetchall()
+        # RDSconn.ping()
+        # with RDSconn.cursor() as cursor:
+        conn = mydbPOOL.connection()
+        mycursor = conn.cursor()
+        # 新增資料指令
+        command = "SELECT * FROM website.url  WHERE user_ID = %s and foldername is null;"
+        # 執行指令
+        mycursor.execute(command, (user_ID,))
+        # 取得所有資料
+        content = mycursor.fetchall()
+    
+        data = []
+        for i in range(len(content)):
+            body = {               
+                "url": content[i][0],
+                "title": content[i][1],
+                "des": content[i][2],
+                "pic": content[i][3],
+                "id":content[i][4],
+                "liked":content[i][7],
+            },
+            data.append(body)
         
-            data = []
-            for i in range(len(content)):
-                body = {               
-                    "url": content[i][0],
-                    "title": content[i][1],
-                    "des": content[i][2],
-                    "pic": content[i][3],
-                    "id":content[i][4],
-                    "liked":content[i][7],
-                },
-                data.append(body)
-            
-            successmessage = {
-                "data": data
-            }
-            return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
+        successmessage = {
+            "data": data
+        }
+        return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
     else:
         failmessage = {"data": None}
         return json.dumps(failmessage, ensure_ascii=False, indent=2), 500, {"Content-Type": "application/json"}
@@ -320,31 +366,42 @@ def del_article():
         data = request.get_data()
         data = json.loads(data)
         url = data['ID']
-        RDSconn.ping()
-        # 建立Cursor物件
-        with RDSconn.cursor() as cursor:
-            # 刪除特定資料指令
-            command = "DELETE FROM url WHERE url=%s AND user_ID = %s"
-            # 執行指令
-            cursor.execute(command, (url,user_ID))
-            #儲存變更
-            RDSconn.commit()
-            RDSconn.ping()
-            cur=RDSconn.cursor()
-            # 刪除特定資料指令
-            command = "DELETE FROM article WHERE url=%s AND user_ID = %s"
-            # 執行指令
-            cur.execute(command, (url,user_ID))
-            #儲存變更
-            RDSconn.commit()
-            cur2=RDSconn.cursor()
-            command = "DELETE FROM keyword WHERE url=%s AND user_ID = %s"
-            cur2.execute(command, (url,user_ID))
-            RDSconn.commit()
-            successmessage = {
-                            "ok": True
-                            }
-            return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
+        # RDSconn.ping()
+        # with RDSconn.cursor() as cursor:
+        conn = mydbPOOL.connection()
+        mycursor = conn.cursor()
+        # 刪除特定資料指令
+        command = "DELETE FROM url WHERE url=%s AND user_ID = %s"
+        # 執行指令
+        mycursor.execute(command, (url,user_ID))
+        #儲存變更
+        # RDSconn.commit()
+        # RDSconn.ping()
+        conn.commit()
+        conn.close()
+        # cur=RDSconn.cursor()
+        conn = mydbPOOL.connection()
+        mycursor = conn.cursor()
+        # 刪除特定資料指令
+        command = "DELETE FROM article WHERE url=%s AND user_ID = %s"
+        # 執行指令
+        mycursor.execute(command, (url,user_ID))
+        conn.commit()
+        conn.close()
+        #儲存變更
+        # RDSconn.commit()
+        # cur2=RDSconn.cursor()
+        conn = mydbPOOL.connection()
+        mycursor = conn.cursor()
+        command = "DELETE FROM keyword WHERE url=%s AND user_ID = %s"
+        mycursor.execute(command, (url,user_ID))
+        # RDSconn.commit()
+        conn.commit()
+        conn.close()
+        successmessage = {
+                        "ok": True
+                        }
+        return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
 
 
 @app.route("/api/getcontent", methods=['POST'])
@@ -388,47 +445,176 @@ def likedstat():
         data=json.loads(data)
         articleID=data['ID']
         liked = data['liked']
-        RDSconn.ping()
-        # 建立Cursor物件
-        with RDSconn.cursor() as cursor:
-            # 修改資料SQL語法
-            command ="UPDATE url SET liked = %s WHERE ID = %s;"
-            # 執行指令
-            cursor.execute(command, (liked,articleID))
-      
-            #儲存變更
-            RDSconn.commit()
-            successmessage={
-                "ok":True
-            }
-            return json.dumps(successmessage,ensure_ascii=False,indent=2),200,{"Content-type":"application/json"}
-            
+        # RDSconn.ping()
+        # # 建立Cursor物件
+        # with RDSconn.cursor() as cursor:
+        conn = mydbPOOL.connection()
+        mycursor = conn.cursor()
+        # 修改資料SQL語法
+        command ="UPDATE url SET liked = %s WHERE ID = %s;"
+        # 執行指令
+        mycursor.execute(command, (liked,articleID))
+    
+        #儲存變更
+        # RDSconn.commit()
+        conn.commit()
+        conn.close()
+        successmessage={
+            "ok":True
+        }
+        return json.dumps(successmessage,ensure_ascii=False,indent=2),200,{"Content-type":"application/json"}
+        
 @app.route("/api/likedstat",methods=['GET'])
 def likedarticle():
         if 'username' in session:
             user_ID= session['username']
             pageind = int(request.args.get('page'))
             pagenum=0
-            RDSconn.ping()
-            with RDSconn.cursor() as cursor:
-                # 新增資料指令
-                command = "SELECT * FROM url WHERE user_ID = %s and liked = 'Y';"
-                # 執行指令
-                cursor.execute(command, (user_ID,))
-                # 取得所有資料
-                content = cursor.fetchall()
-                data=[]
-                for i in range(len(content)):
-                    body = {               
-                        "url": content[i][0],
-                        "title": content[i][1],
-                        "des": content[i][2],
-                        "pic": content[i][3],
-                        "id":content[i][4],
-                    },
-                    data.append(body)
-                # 判斷是否是最後頁
-                print("Page", pageind)
+            # RDSconn.ping()
+            # with RDSconn.cursor() as cursor:
+            conn = mydbPOOL.connection()
+            mycursor = conn.cursor()
+            # 新增資料指令
+            command = "SELECT * FROM url WHERE user_ID = %s and liked = 'Y';"
+            # 執行指令
+            mycursor.execute(command, (user_ID,))
+            # 取得所有資料
+            content = mycursor.fetchall()
+            data=[]
+            for i in range(len(content)):
+                body = {               
+                    "url": content[i][0],
+                    "title": content[i][1],
+                    "des": content[i][2],
+                    "pic": content[i][3],
+                    "id":content[i][4],
+                },
+                data.append(body)
+            # 判斷是否是最後頁
+            print("Page", pageind)
+        if pageind == 26:
+            successmessage = {
+                "nextPage": None,
+                "data": data
+            }
+            return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
+        else:
+            successmessage = {
+                "nextPage": pageind+1,
+                "data": data
+            }
+            return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}   
+        
+@app.route("/api/folder",methods=['POST'])
+def addfolderapi():
+        if 'username' in session:
+            user_ID= session['username']
+            data = request.get_data()
+            data=json.loads(data)
+            foldername=data['name']
+            # RDSconn.ping()
+            # with RDSconn.cursor() as cursor:
+            conn = mydbPOOL.connection()
+            mycursor = conn.cursor()
+            mycursor.execute("INSERT INTO folder (foldername,user_ID) VALUES (%s,%s)",(foldername,user_ID))
+            # RDSconn.commit()
+            conn.commit()
+            conn.close()
+            successmessage={
+                "ok":True
+            }
+            return json.dumps(successmessage,ensure_ascii=False,indent=2),200,{"Content-type":"application/json"}     
+    
+@app.route("/api/getfolder",methods=['GET'])    
+def getfoldername():
+        if 'username' in session:
+            user_ID= session['username']
+            # RDSconn.ping()
+            # with RDSconn.cursor() as cursor:
+            conn = mydbPOOL.connection()
+            mycursor = conn.cursor()
+            # 新增資料指令
+            command = "SELECT  DISTINCT website.folder.foldername FROM  website.folder WHERE website.folder.user_ID =  %s;"
+            # 執行指令
+            mycursor.execute(command, (user_ID,))
+            # 取得所有資料
+            content = mycursor.fetchall()
+            data=[]
+            for i in range(len(content)):
+                body = {               
+                    "foldername": content[i][0]
+                },
+                data.append(body)
+            successmessage={
+                "data": data
+            }
+            return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
+
+
+@app.route("/api/addlinkbyfolder",methods=['POST'])
+def addlinkbyfolder():
+    if 'username' in session:
+        user_ID = session['username']
+        data=request.get_data()
+        data=json.loads(data)
+        foldername=data['foldername']
+        url=data['url']
+        # RDSconn.ping()
+        # with RDSconn.cursor() as cursor:
+        conn = mydbPOOL.connection()
+        mycursor = conn.cursor()
+        mycursor.execute("INSERT INTO folder (foldername,user_ID,url) VALUES (%s,%s,%s)",(foldername,user_ID,url))
+        conn.commit()
+        conn.close()
+        # RDSconn.commit()
+        # RDSconn.ping()
+        # with RDSconn.cursor() as cursor:
+        conn = mydbPOOL.connection()
+        mycursor = conn.cursor()
+        # 修改資料SQL語法
+        command ="UPDATE url SET foldername = %s WHERE url = %s;"
+        # 執行指令
+        mycursor.execute(command, (foldername,url))      
+        #儲存變更
+        # RDSconn.commit()
+        conn.commit()
+        conn.close()
+        
+
+        successmessage={
+            "ok":True
+        }
+        return json.dumps(successmessage,ensure_ascii=False,indent=2),200,{"Content-type":"application/json"}     
+
+@app.route("/api/addlinkbyfolder/<folder>",methods=['GET'])
+def addlinkbyfolder_getcontent(folder):
+        if 'username' in session:
+            user_ID = session['username']
+            pageind = 0
+            # pagenum=0
+            # RDSconn.ping()
+            # with RDSconn.cursor() as cursor:
+            conn = mydbPOOL.connection()
+            mycursor = conn.cursor()
+            # 新增資料指令
+            command = "SELECT * FROM website.folder JOIN website.url ON website.folder.user_ID=website.url.user_ID AND website.folder.url = website.url.url WHERE  website.folder.user_ID = %s AND website.folder.foldername = %s ;"
+            # 執行指令
+            mycursor.execute(command,(user_ID,folder))
+            # 取得所有資料
+            content = mycursor.fetchall()            
+            data = []
+            for i in range(len(content)):
+                body = {               
+                    "url": content[i][4],
+                    "title": content[i][5],
+                    "des": content[i][6],
+                    "pic": content[i][7],
+                    "id":content[i][8],
+                    "liked":content[i][11],
+                },
+                data.append(body)
+            # 判斷是否是最後頁
+            print("Page", pageind)
             if pageind == 26:
                 successmessage = {
                     "nextPage": None,
@@ -440,174 +626,71 @@ def likedarticle():
                     "nextPage": pageind+1,
                     "data": data
                 }
-                return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}   
+                return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"} 
             
-@app.route("/api/folder",methods=['POST'])
-def addfolderapi():
-        if 'username' in session:
-            user_ID= session['username']
-            data = request.get_data()
-            data=json.loads(data)
-            foldername=data['name']
-            RDSconn.ping()
-            with RDSconn.cursor() as cursor:
-                cursor.execute("INSERT INTO folder (foldername,user_ID) VALUES (%s,%s)",(foldername,user_ID))
-                RDSconn.commit()
-                successmessage={
-                    "ok":True
-                }
-                return json.dumps(successmessage,ensure_ascii=False,indent=2),200,{"Content-type":"application/json"}     
-        
-@app.route("/api/getfolder",methods=['GET'])    
-def getfoldername():
-        if 'username' in session:
-            user_ID= session['username']
-            RDSconn.ping()
-            with RDSconn.cursor() as cursor:
-                # 新增資料指令
-                command = "SELECT  DISTINCT website.folder.foldername FROM  website.folder WHERE website.folder.user_ID =  %s;"
-                # 執行指令
-                cursor.execute(command, (user_ID,))
-                # 取得所有資料
-                content = cursor.fetchall()
-                data=[]
-                for i in range(len(content)):
-                    body = {               
-                        "foldername": content[i][0]
-                    },
-                    data.append(body)
-                successmessage={
-                    "data": data
-                }
-                return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
-    
-
-@app.route("/api/addlinkbyfolder",methods=['POST'])
-def addlinkbyfolder():
-    if 'username' in session:
-        user_ID = session['username']
-        data=request.get_data()
-        data=json.loads(data)
-        foldername=data['foldername']
-        url=data['url']
-        RDSconn.ping()
-        with RDSconn.cursor() as cursor:
-                cursor.execute("INSERT INTO folder (foldername,user_ID,url) VALUES (%s,%s,%s)",(foldername,user_ID,url))
-                RDSconn.commit()
-        RDSconn.ping()
-        with RDSconn.cursor() as cursor:
-                # 修改資料SQL語法
-                command ="UPDATE url SET foldername = %s WHERE url = %s;"
-                # 執行指令
-                cursor.execute(command, (foldername,url))      
-                #儲存變更
-                RDSconn.commit()
-               
-        
-                successmessage={
-                    "ok":True
-                }
-                return json.dumps(successmessage,ensure_ascii=False,indent=2),200,{"Content-type":"application/json"}     
-
-@app.route("/api/addlinkbyfolder/<folder>",methods=['GET'])
-def addlinkbyfolder_getcontent(folder):
-        if 'username' in session:
-            user_ID = session['username']
-            pageind = 0
-            # pagenum=0
-            RDSconn.ping()
-            with RDSconn.cursor() as cursor:
-                # 新增資料指令
-                command = "SELECT * FROM website.folder JOIN website.url ON website.folder.user_ID=website.url.user_ID AND website.folder.url = website.url.url WHERE  website.folder.user_ID = %s AND website.folder.foldername = %s ;"
-                # 執行指令
-                cursor.execute(command,(user_ID,folder))
-                # 取得所有資料
-                content = cursor.fetchall()            
-                data = []
-                for i in range(len(content)):
-                    body = {               
-                        "url": content[i][4],
-                        "title": content[i][5],
-                        "des": content[i][6],
-                        "pic": content[i][7],
-                        "id":content[i][8],
-                        "liked":content[i][11],
-                    },
-                    data.append(body)
-                # 判斷是否是最後頁
-                print("Page", pageind)
-                if pageind == 26:
-                    successmessage = {
-                        "nextPage": None,
-                        "data": data
-                    }
-                    return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
-                else:
-                    successmessage = {
-                        "nextPage": pageind+1,
-                        "data": data
-                    }
-                    return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"} 
-             
 @app.route("/api/findoption", methods=['GET'])
 def findoption():
 
     key = (request.args.get('srckey'))
     if 'username' in session:
         user_ID = session['username']          
-        RDSconn.ping()
-        with RDSconn.cursor() as cursor:
-            # 新增資料指令
-            command ="SELECT * FROM keyword WHERE keyword = %s AND user_ID = %s AND title is not null;"
-            # 執行指令
-            cursor.execute(command,(key,user_ID))
-            # 取得所有資料
-            content = cursor.fetchall()
-            
-    
-            data = []
-            for i in range(len(content)):
-                body = {               
-                    "url": content[i][5],
-                    "title": content[i][4],
-                },
-                data.append(body)
+        # RDSconn.ping()
+        # with RDSconn.cursor() as cursor:
+        conn = mydbPOOL.connection()
+        mycursor = conn.cursor()
+        # 新增資料指令
+        command ="SELECT * FROM keyword WHERE keyword = %s AND user_ID = %s AND title is not null;"
+        # 執行指令
+        mycursor.execute(command,(key,user_ID))
+        # 取得所有資料
+        content = mycursor.fetchall()
+        
 
-            successmessage = {
-                "data": data
-            }
-            return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"} 
-    
+        data = []
+        for i in range(len(content)):
+            body = {               
+                "url": content[i][5],
+                "title": content[i][4],
+            },
+            data.append(body)
+
+        successmessage = {
+            "data": data
+        }
+        return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"} 
+
 @app.route("/api/renderselected",methods=['GET'])
 def renderselected():
     link=request.args.get('link')
     if 'username' in session:
         user_ID = session['username']
-        RDSconn.ping()
-        with RDSconn.cursor() as cursor:
-            # 新增資料指令
-            command ="SELECT * FROM website.url  WHERE user_ID = %s AND url= %s ;"
-            # 執行指令
-            cursor.execute(command,(user_ID,link))
-            # 取得所有資料
-            content = cursor.fetchall()
-        
-            data = []
-            for i in range(len(content)):
-                body = {               
-                    "url": content[i][0],
-                    "title": content[i][1],
-                    "des": content[i][2],
-                    "pic": content[i][3],
-                    "id":content[i][4],
-                    "liked":content[i][7],
-                },
-                data.append(body)
-        
-            successmessage = {
-                "data": data
-            }
-            return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
+        # RDSconn.ping()
+        # with RDSconn.cursor() as cursor:
+        conn = mydbPOOL.connection()
+        mycursor = conn.cursor()
+        # 新增資料指令
+        command ="SELECT * FROM website.url  WHERE user_ID = %s AND url= %s ;"
+        # 執行指令
+        mycursor.execute(command,(user_ID,link))
+        # 取得所有資料
+        content = mycursor.fetchall()
+    
+        data = []
+        for i in range(len(content)):
+            body = {               
+                "url": content[i][0],
+                "title": content[i][1],
+                "des": content[i][2],
+                "pic": content[i][3],
+                "id":content[i][4],
+                "liked":content[i][7],
+            },
+            data.append(body)
+    
+        successmessage = {
+            "data": data
+        }
+        return json.dumps(successmessage, ensure_ascii=False, indent=2), 200, {"Content-Type": "application/json"}
 
 
 app.run(host="0.0.0.0",port=3000)
