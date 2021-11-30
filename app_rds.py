@@ -93,13 +93,11 @@ def addfolder(foldername):
 @app.route("/api/user", methods=['GET'])
 def user_get():
 
-#     # 檢查使用者登入狀態
+    # 檢查使用者登入狀態
     if 'username' in session:
         user_ID = session['username']
         
     # 取出id
-        # RDSconn.ping()
-        # with RDSconn.cursor() as cursor:
         conn = mydbPOOL.connection()
         mycursor = conn.cursor()
         # 新增資料指令
@@ -112,8 +110,6 @@ def user_get():
         id = int(str(id)[2:len(id)-5])
     #         # 取出使用者姓名
         command = "SELECT username FROM user WHERE ID=%s"
-        # RDSconn.ping()
-        # cur=RDSconn.cursor()
         conn = mydbPOOL.connection()
         mycursor = conn.cursor()
         mycursor.execute(command, (user_ID,))
@@ -147,8 +143,6 @@ def user_post():
         password = data['password']
         h = hashing.hash_value(password, salt='abcd')
         password_hashed = h   
-        # RDSconn.ping()
-        # with RDSconn.cursor() as cursor:
         conn = mydbPOOL.connection()
         mycursor = conn.cursor()
         # 新增資料指令
@@ -165,14 +159,10 @@ def user_post():
                             }
             return json.dumps(failmessage, ensure_ascii=False, indent=2), 400, {"Content-Type": "application/json"}
         else:
-            # RDSconn.ping()
-            # # 建立Cursor物件
-            # with RDSconn.cursor() as cursor:
             conn = mydbPOOL.connection()
             mycursor = conn.cursor()
             # 新增資料SQL語法                
             mycursor.execute("INSERT INTO user (username,email,password) VALUES (%s, %s, %s)",(name, email, password_hashed))
-            # RDSconn.commit()
             conn.commit()
             conn.close()
             successmessage = {
@@ -181,8 +171,6 @@ def user_post():
             val_hash = hashing.hash_value(password, salt='abcd')
                 
             if hashing.check_value(val_hash, password, salt='abcd'):
-                # RDSconn.ping()
-                # with RDSconn.cursor() as cursor:
                 conn = mydbPOOL.connection()
                 mycursor = conn.cursor()
                 # 新增資料指令
@@ -226,8 +214,6 @@ def user_patch():
         val_hash = hashing.hash_value(password, salt='abcd')
                     
         if hashing.check_value(val_hash, password, salt='abcd'):
-            # RDSconn.ping()
-            # with RDSconn.cursor() as cursor:
             conn = mydbPOOL.connection()
             mycursor = conn.cursor()
             # 新增資料指令
@@ -284,9 +270,7 @@ def addlink():
             pic=detail[2]
             if pic=='None':
                 pic='https://img.icons8.com/ios/100/000000/e-learning-2.png'
-            
-            # RDSconn.ping()
-            # with RDSconn.cursor() as cursor:
+
             conn = mydbPOOL.connection()
             mycursor = conn.cursor()
             # 新增資料指令
@@ -303,20 +287,14 @@ def addlink():
                                 }
                 return json.dumps(failmessage, ensure_ascii=False, indent=2), 400, {"Content-Type": "application/json"}
             else:
-                # RDSconn.ping()
-                # cur=RDSconn.cursor()
                 conn = mydbPOOL.connection()
                 mycursor = conn.cursor()
                 mycursor.execute("INSERT INTO url (url, title, des, pic, user_ID) VALUES (%s,%s,%s,%s,%s)",(url,tilte,des,pic,user_ID))
                 conn.commit()
                 conn.close()
-                # RDSconn.commit()
-                # RDSconn.ping()
-                # cur=RDSconn.cursor()
                 conn = mydbPOOL.connection()
                 mycursor = conn.cursor()
                 mycursor.execute("INSERT INTO article (url, user_ID) VALUES (%s,%s)",(url,user_ID))
-                # RDSconn.commit()
                 conn.commit()
                 conn.close()
                 successmessage = {
@@ -330,8 +308,6 @@ def renderlink():
     
     if 'username' in session:
         user_ID = session['username']
-        # RDSconn.ping()
-        # with RDSconn.cursor() as cursor:
         conn = mydbPOOL.connection()
         mycursor = conn.cursor()
         # 新增資料指令
@@ -368,8 +344,6 @@ def del_article():
         data = request.get_data()
         data = json.loads(data)
         url = data['ID']
-        # RDSconn.ping()
-        # with RDSconn.cursor() as cursor:
         conn = mydbPOOL.connection()
         mycursor = conn.cursor()
         # 刪除特定資料指令
@@ -377,11 +351,8 @@ def del_article():
         # 執行指令
         mycursor.execute(command, (url,user_ID))
         #儲存變更
-        # RDSconn.commit()
-        # RDSconn.ping()
         conn.commit()
         conn.close()
-        # cur=RDSconn.cursor()
         conn = mydbPOOL.connection()
         mycursor = conn.cursor()
         # 刪除特定資料指令
@@ -391,13 +362,10 @@ def del_article():
         conn.commit()
         conn.close()
         #儲存變更
-        # RDSconn.commit()
-        # cur2=RDSconn.cursor()
         conn = mydbPOOL.connection()
         mycursor = conn.cursor()
         command = "DELETE FROM keyword WHERE url=%s AND user_ID = %s"
         mycursor.execute(command, (url,user_ID))
-        # RDSconn.commit()
         conn.commit()
         conn.close()
         successmessage = {
@@ -447,9 +415,6 @@ def likedstat():
         data=json.loads(data)
         articleID=data['ID']
         liked = data['liked']
-        # RDSconn.ping()
-        # # 建立Cursor物件
-        # with RDSconn.cursor() as cursor:
         conn = mydbPOOL.connection()
         mycursor = conn.cursor()
         # 修改資料SQL語法
@@ -458,7 +423,6 @@ def likedstat():
         mycursor.execute(command, (liked,articleID))
     
         #儲存變更
-        # RDSconn.commit()
         conn.commit()
         conn.close()
         successmessage={
@@ -472,8 +436,6 @@ def likedarticle():
             user_ID= session['username']
             pageind = int(request.args.get('page'))
             pagenum=0
-            # RDSconn.ping()
-            # with RDSconn.cursor() as cursor:
             conn = mydbPOOL.connection()
             mycursor = conn.cursor()
             # 新增資料指令
@@ -514,12 +476,9 @@ def addfolderapi():
             data = request.get_data()
             data=json.loads(data)
             foldername=data['name']
-            # RDSconn.ping()
-            # with RDSconn.cursor() as cursor:
             conn = mydbPOOL.connection()
             mycursor = conn.cursor()
             mycursor.execute("INSERT INTO folder (foldername,user_ID) VALUES (%s,%s)",(foldername,user_ID))
-            # RDSconn.commit()
             conn.commit()
             conn.close()
             successmessage={
@@ -531,8 +490,6 @@ def addfolderapi():
 def getfoldername():
         if 'username' in session:
             user_ID= session['username']
-            # RDSconn.ping()
-            # with RDSconn.cursor() as cursor:
             conn = mydbPOOL.connection()
             mycursor = conn.cursor()
             # 新增資料指令
@@ -561,16 +518,11 @@ def addlinkbyfolder():
         data=json.loads(data)
         foldername=data['foldername']
         url=data['url']
-        # RDSconn.ping()
-        # with RDSconn.cursor() as cursor:
         conn = mydbPOOL.connection()
         mycursor = conn.cursor()
         mycursor.execute("INSERT INTO folder (foldername,user_ID,url) VALUES (%s,%s,%s)",(foldername,user_ID,url))
         conn.commit()
         conn.close()
-        # RDSconn.commit()
-        # RDSconn.ping()
-        # with RDSconn.cursor() as cursor:
         conn = mydbPOOL.connection()
         mycursor = conn.cursor()
         # 修改資料SQL語法
@@ -578,7 +530,6 @@ def addlinkbyfolder():
         # 執行指令
         mycursor.execute(command, (foldername,url))      
         #儲存變更
-        # RDSconn.commit()
         conn.commit()
         conn.close()
         
@@ -593,9 +544,6 @@ def addlinkbyfolder_getcontent(folder):
         if 'username' in session:
             user_ID = session['username']
             pageind = 0
-            # pagenum=0
-            # RDSconn.ping()
-            # with RDSconn.cursor() as cursor:
             conn = mydbPOOL.connection()
             mycursor = conn.cursor()
             # 新增資料指令
@@ -635,9 +583,7 @@ def findoption():
 
     key = (request.args.get('srckey'))
     if 'username' in session:
-        user_ID = session['username']          
-        # RDSconn.ping()
-        # with RDSconn.cursor() as cursor:
+        user_ID = session['username']
         conn = mydbPOOL.connection()
         mycursor = conn.cursor()
         # 新增資料指令
@@ -646,7 +592,6 @@ def findoption():
         mycursor.execute(command,(key,user_ID))
         # 取得所有資料
         content = mycursor.fetchall()
-        
 
         data = []
         for i in range(len(content)):
@@ -666,8 +611,6 @@ def renderselected():
     link=request.args.get('link')
     if 'username' in session:
         user_ID = session['username']
-        # RDSconn.ping()
-        # with RDSconn.cursor() as cursor:
         conn = mydbPOOL.connection()
         mycursor = conn.cursor()
         # 新增資料指令
