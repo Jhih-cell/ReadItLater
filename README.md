@@ -1,7 +1,7 @@
 #  Read It Later <br>
 **Save it, read it later!**<br>
 
-online website deployed on EC2: [https://readitlater.live/](https://readitlater.live/)<br>
+online website deployed on EC2: [https://readitlater.live/](https://readitlater.live/) ( IP NOT IN USE NOW )<br>
 
 **Information for test ↓** <br>
 account: maru@mail.com<br>
